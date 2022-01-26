@@ -98,7 +98,8 @@ public:
 
 class OBJECT
 {
-	
+public:
+	std::vector<TRIANGLE> mesh;
 };
 
 class V_POINT : public POINT

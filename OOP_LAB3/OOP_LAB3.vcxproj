@@ -149,7 +149,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Classes.cpp" />
-    <ClCompile Include="OOP_LAB3.cpp" />
     <ClCompile Include="Perspective.cpp" />
   </ItemGroup>
   <ItemGroup>
