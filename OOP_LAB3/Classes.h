@@ -100,50 +100,7 @@ class OBJECT
 {
 public:
 	std::vector<TRIANGLE> mesh;
+	void draw(sf::RenderWindow& window) const;
+
 };
 
-class V_POINT : public POINT
-{
-public:
-	float bottom_x = 0;
-	float bottom_y = 0;
-	float radius = 0;
-
-	bool circle_event = false;
-
-	POINT p1, p2, p3, center_point;
-	PARABOLA parabola;
-
-	void set_2_circle_event(V_POINT p1, V_POINT p2, V_POINT p3, bool& change);
-	//void update_parabola(PARABOLA p);
-	bool point_check(POINT p);
-	//void operator==(V_POINT e);
-};
-class KIRK_POINT : public POINT
-{
-public:
-	bool right = true;
-	bool left = true;
-};
-class VORONOI
-{
-public:
-	static std::vector<V_POINT> find_diagram(std::vector<V_POINT> points);
-	static void procced_point(std::vector<V_POINT>& points, std::vector<V_POINT>& BEACH_LINE,std::vector<V_POINT>& CIRCLE_EVENTS, LINE& line);
-	static void procced_circle_event(std::vector<V_POINT>& points, std::vector<V_POINT>& BEACH_LINE,std::vector<V_POINT>& CIRCLE_EVENTS, std::vector<V_POINT>& VERTICES, LINE& line);
-};
-class KIRKPATRICK
-{
-public:
-	static std::vector<EDGE> find_shell(std::vector<KIRK_POINT> points);
-	static void sort_by_buckets(std::vector<std::vector<KIRK_POINT>>& bucket, std::vector<KIRK_POINT>& right,
-		std::vector<KIRK_POINT>& left);
-	static void proceed_l_1(std::deque<float>& slopes, float& relative_slope, EDGE& edge,
-		std::vector<KIRK_POINT>& left, std::vector<EDGE>& shell, int i);
-	static void proceed_l_2(std::deque<float>& slopes, float& relative_slope, EDGE& edge,
-		std::vector<KIRK_POINT>& left, std::vector<EDGE>& shell, int i);
-	static void proceed_r_1(std::deque<float>& slopes, float& relative_slope, EDGE& edge,
-		std::vector<KIRK_POINT>& left, std::vector<EDGE>& shell, int i);
-	static void proceed_r_2(std::deque<float>& slopes, float& relative_slope, EDGE& edge,
-		std::vector<KIRK_POINT>& left, std::vector<EDGE>& shell, int i);
-};
