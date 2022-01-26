@@ -22,10 +22,13 @@ class POINT
 public:
 	float x = 0;
 	float y = 0;
+	float z = 0;
+
+
 	sf::Color color;
 
 	void middle(POINT a,POINT b);
-	void create(float a, float b);
+	void create(float a, float b,float c);
 	void clear();
 	void draw(sf::RenderWindow& window) const;
 	bool operator>(POINT p);
@@ -92,6 +95,7 @@ public:
 
 	void create(POINT v1, POINT v2, POINT v3);
 	void draw(sf::RenderWindow& window) const;
+	void draw_3d(sf::RenderWindow& window) const;
 	void paint(std::string Col);
 	void paint(HEX color);
 };
@@ -101,6 +105,6 @@ class OBJECT
 public:
 	std::vector<TRIANGLE> mesh;
 	void draw(sf::RenderWindow& window) const;
-
+	void create()
 };
 

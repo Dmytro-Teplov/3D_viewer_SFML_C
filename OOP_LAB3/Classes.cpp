@@ -13,10 +13,11 @@ void POINT::middle(POINT a, POINT b)
 	this->x = (a.x + b.x) / 2;
 	this->y = (a.y + b.y) / 2;
 }
-void POINT::create(float a, float b)
+void POINT::create(float a, float b,float c)
 {
 	this->x = a;
 	this->y = b;
+	this->z = c;
 }
 void POINT::clear()
 {
@@ -30,6 +31,8 @@ void POINT::draw(sf::RenderWindow& window) const
 	s += std::to_string((int)this->x);
 	s.push_back(',');
 	s += std::to_string((int)this->y);
+	s.push_back(',');
+	s += std::to_string((int)this->z);
 	s.push_back(']');
 	sf::CircleShape shape(2.f);
 	sf::Text text;
@@ -41,8 +44,8 @@ void POINT::draw(sf::RenderWindow& window) const
 	text.setString(s);
 	text.setStyle(sf::Text::Bold | sf::Text::Underlined);
 	text.setFillColor(sf::Color::Red);
-	text.setPosition(this->x-2 , this->y);
-	shape.setPosition(this->x-2,this->y-2);
+	text.setPosition(this->x-2 , -(this->y));
+	shape.setPosition(this->x-2,-(this->y-2));
 	shape.setFillColor(sf::Color::White);
 	window.draw(text);
 	window.draw(shape);
@@ -60,6 +63,7 @@ void POINT::operator=(POINT d)
 {
 	this->x = d.x;
 	this->y = d.y;
+	this->z = d.z;
 
 }
 bool POINT::operator==(POINT p)
@@ -69,7 +73,7 @@ bool POINT::operator==(POINT p)
 POINT POINT::operator*(float k)
 {
 	POINT newP;
-	newP.create(this->x * k, this->y * k);
+	newP.create(this->x * k, this->y * k,this->z*k);
 	return newP;
 }
 bool POINT::null()
@@ -112,15 +116,42 @@ void TRIANGLE::draw(sf::RenderWindow& window) const
 {
 	sf::ConvexShape convex;
 	convex.setPointCount(3);
-	convex.setPoint(0, sf::Vector2f(this->v1.x, this->v1.y));
-	convex.setPoint(1, sf::Vector2f(this->v2.x, this->v2.y));
-	convex.setPoint(2, sf::Vector2f(this->v3.x, this->v3.y));
+	convex.setPoint(0, sf::Vector2f(this->v1.x, -this->v1.y));
+	convex.setPoint(1, sf::Vector2f(this->v2.x, -this->v2.y));
+	convex.setPoint(2, sf::Vector2f(this->v3.x, -this->v3.y));
 
 	convex.setOutlineThickness(this->border_width);
 	convex.setOutlineColor(this->border_color);
 	convex.setFillColor(this->color);
 	window.draw(convex);
 	
+}
+void TRIANGLE::draw_3d(sf::RenderWindow& window) const
+{
+	sf::ConvexShape convex;
+	convex.setPointCount(3);
+	float k1, k2, k3;
+	if (this->v1.z < 0)
+		k1 = exp(this->v1.z / 1000);
+	else
+		k1 = exp(this->v1.z / 380);
+
+	if (this->v2.z < 0)
+		k2 = exp(this->v2.z / 1000);
+	else
+		k2 = exp(this->v2.z / 380);
+
+	if (this->v3.z < 0)
+		k3 = exp(this->v3.z / 1000);
+	else
+		k3 = exp(this->v3.z/380);
+	//std::cout << k1 << " " << k2 << " " << k3;
+	convex.setPoint(0, sf::Vector2f(this->v1.x*k1, -this->v1.y*k1));
+	convex.setPoint(1, sf::Vector2f(this->v2.x*k2, -this->v2.y*k2));
+	convex.setPoint(2, sf::Vector2f(this->v3.x*k3, -this->v3.y*k3));
+
+	convex.setFillColor(this->color);
+	window.draw(convex);
 }
 void TRIANGLE::create(POINT v1, POINT v2, POINT v3)
 {
@@ -133,7 +164,6 @@ void TRIANGLE::paint(std::string Col)
 	if (Col == "Red") 
 	{
 		this->color = sf::Color::Red;
-		std::cout << "Red";
 	}
 	if (Col == "Green")
 	{
@@ -161,7 +191,7 @@ void TRIANGLE::paint(HEX color)
 
 std::ostream& operator<<(std::ostream& os, POINT p)
 {
-	os << "(" << p.x << "," << p.y<<")";
+	os << "(" << p.x << "," << p.y<<","<<p.z << ")";
 	return os;
 }
 std::ostream& operator<<(std::ostream& os, EDGE& e)
@@ -239,4 +269,5 @@ bool LINE::operator==(LINE l)
 
 void OBJECT::draw(sf::RenderWindow& window) const
 {
+	
 }

@@ -3,17 +3,40 @@
 
 int main()
 {
-
-    HEX violet;
+    POINT origin;
+    origin.create(0, 0, 0);
+    HEX violet,violet2;
     violet.create(167, 128,255);
-    POINT pointy;
-    pointy.create(200, 120);
-    POINT pointy2 = pointy * 0.5;
-    pointy2.x += 100;
-    POINT pointy3 = pointy * 0.2;
-    TRIANGLE tris;
-    tris.create(pointy,pointy2,pointy3);
-    tris.paint(violet);
+    violet2.create(167, 80,255);
+
+    POINT p1, p2, p3, p4, p5, p6, p7, p8;
+    p1.create(100,-100,-100);
+    p2.create(-100,-100,-100);
+    p3.create(-100,100,-100);
+    p4.create(100,100,-100);
+    p5.create(-100,-100,100);
+    p6.create(100,100,100);
+    p7.create(-100,100,100);
+    p8.create(100,-100,100);
+
+    
+    TRIANGLE t1,t2,t3,t4,t5,t6;
+    t1.create(p1,p2,p4);
+    t2.create(p4,p2,p3);
+    t3.create(p5,p2,p3);
+    t4.create(p6,p1,p4);
+    t5.create(p7,p5,p3);
+    t6.create(p8,p6,p1);
+
+    t1.paint(violet);
+    t2.paint(violet2);
+    t3.paint(violet);
+    t4.paint(violet2);
+    t5.paint(violet2);
+    t6.paint(violet);
+
+    OBJECT cube;
+    
     sf::RenderWindow window(sf::VideoMode(1000, 600), "SFML works!");
 
     sf::Vector2u size = window.getSize();
@@ -29,14 +52,19 @@ int main()
         }
         window.clear();
 
-        /*pointy.draw(window);
-        pointy2.draw(window);
-        pointy3.draw(window);*/
-        tris.draw(window);
-        /*for (const auto& el : v)
-            el.draw(window);
-        for (const auto& el : e)
-            el.draw(window);*/
+        //tris.paint("Green");
+        //tris.draw(window);
+        origin.draw(window);
+        
+        //tris.paint("Red");
+        //tris.draw(window);
+        t1.draw_3d(window);
+        t2.draw_3d(window);
+        t3.draw_3d(window);
+        t4.draw_3d(window);
+        t5.draw_3d(window);
+        t6.draw_3d(window);
+        
         window.display();
     }
     
