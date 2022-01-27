@@ -9,7 +9,8 @@ int main()
     violet.create(167, 128,255);
     violet2.create(167, 80,255);
 
-    POINT p1, p2, p3, p4, p5, p6, p7, p8;
+    POINT p,p1, p2, p3, p4, p5, p6, p7, p8;
+    p.create(30,60,60);
     p1.create(100,-100,-100);
     p2.create(-100,-100,-100);
     p3.create(-100,100,-100);
@@ -52,11 +53,15 @@ int main()
                 window.close();
         }
         window.clear();
-
+        
+        p.draw(window);
+        p.rotate(10,true);
+        cube.draw(window);
+        cube.rotate(1);
+        sf::sleep(sf::milliseconds(20));
        
         
         //cube.draw(window);
-
         origin.draw(window);
         
         window.display();

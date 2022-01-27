@@ -1,4 +1,11 @@
 #include "Classes.h"
+double to_rads(double degree)
+{
+	double pi = 3.14159265359;
+	return (degree * (pi / 180));
+}
+
+
 
 void HEX::create(int red_num, int green_num, int blue_num)
 {
@@ -7,6 +14,16 @@ void HEX::create(int red_num, int green_num, int blue_num)
 	this->blue = blue_num;
 }
 
+
+float POINT::distance(POINT a, POINT b)
+{
+	return sqrt(pow((a.x-b.x),2)+ pow((a.y - b.y), 2)+ pow((a.z - b.z), 2));
+}
+
+float POINT::distance(float x1, float y1, float x2, float y2)
+{
+	return sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
+}
 
 void POINT::middle(POINT a, POINT b)
 {
@@ -64,8 +81,13 @@ void POINT::operator=(POINT d)
 	this->x = d.x;
 	this->y = d.y;
 	this->z = d.z;
-
 }
+//void POINT::operator=(const POINT d)
+//{
+//	this->x = d.x;
+//	this->y = d.y;
+//	this->z = d.z;
+//}
 bool POINT::operator==(POINT p)
 {
 	return this->x==p.x&& this->y == p.y;
@@ -85,9 +107,55 @@ bool POINT::compare_x(POINT p1,POINT p2)
 	return p1.x<p2.x;
 }
 
-void POINT::rotate(float angle)
+void POINT::rotate(float angle,bool is3d)
 {
-
+	float x = this->x;
+	float y;
+	if (is3d) 
+	{
+		y = this->z;
+	}
+	else 
+	{
+		y = this->y;
+	}
+	angle = to_rads(angle);
+	float r2 = pow(x, 2) + pow(y, 2);
+	float k = y / x;
+	float k_new = tan(atan(k)+angle);
+	float D = (1 + pow(k_new, 2)) * r2;
+	float x_new1 = sqrt(D) / ((1 + pow(k_new, 2)));
+	float x_new2 = -sqrt(D) / ((1 + pow(k_new, 2)));
+	float y_new1 = k_new * x_new1;
+	float y_new2 = k_new * x_new2;
+	/*std::cout << k<<" ";
+	std::cout << k_new<<" ";
+	std::cout << x_new1<<" ";
+	std::cout << y_new1<<"\n";*/
+	if (POINT::distance(x, y, x_new1, y_new1) < POINT::distance(x, y, x_new2, y_new2))
+	{
+		this->x = x_new1;
+		if (is3d)
+		{
+			this->z = y_new1;
+		}
+		else
+		{
+			this->y = y_new1;
+		}
+	}
+	else
+	{
+		this->x = x_new2;
+		if (is3d)
+		{
+			this->z = y_new2;
+		}
+		else
+		{
+			this->y = y_new2;
+		}
+	}
 }
 
 void EDGE::create(POINT a, POINT b)
@@ -164,6 +232,12 @@ void TRIANGLE::create(POINT v1, POINT v2, POINT v3)
 	this->v2 = v2;
 	this->v3 = v3;
 }
+float TRIANGLE::center() const
+{
+	POINT centroid;
+	centroid.create((this->v1.x + this->v2.x + this->v3.x)/3, (this->v1.y + this->v2.y + this->v3.y) / 3, (this->v1.z + this->v2.z + this->v3.z) / 3);
+	return centroid.z;
+}
 void TRIANGLE::paint(std::string Col)
 {
 	if (Col == "Red") 
@@ -193,6 +267,33 @@ void TRIANGLE::paint(HEX color)
 {
 	this->color = sf::Color(color.red, color.green, color.blue);
 }
+
+void TRIANGLE::rotate(float angle)
+{
+	this->v1.rotate(angle, true);
+	this->v2.rotate(angle, true);
+	this->v3.rotate(angle, true);
+}
+
+void TRIANGLE::operator=(TRIANGLE tris)
+{
+	this->border_color = tris.border_color;
+	this->color = tris.color;
+	this->v1 = tris.v1;
+	this->v2 = tris.v2;
+	this->v3 = tris.v3;
+	this->border_width = tris.border_width;
+}
+
+//void TRIANGLE::operator=(const TRIANGLE tris) const
+//{
+//	this->border_color = tris.border_color;
+//	this->color = tris.color;
+//	this->v1 = tris.v1;
+//	this->v2 = tris.v2;
+//	this->v3 = tris.v3;
+//	this->border_width = tris.border_width;
+//}
 
 std::ostream& operator<<(std::ostream& os, POINT p)
 {
@@ -270,11 +371,25 @@ bool LINE::operator==(LINE l)
 {
 	return l.b==this->b&&l.k==this->k;
 }
-
-
-void OBJECT::draw(sf::RenderWindow& window) const
+void swap(std::vector<TRIANGLE>& tris, int pos1, int pos2)
 {
-	for (int i = 0; i < std::size(this->mesh); i++) {
+	
+	TRIANGLE t1;
+	t1=tris[pos1];
+	tris[pos1] = tris[pos2];
+	tris[pos2] = t1;
+}
+
+void OBJECT::draw(sf::RenderWindow& window)
+{
+
+	int i, j;
+	for (i = 0; i < std::size(this->mesh) - 1; i++)
+		for (j = 0; j < std::size(this->mesh) - i - 1; j++)
+			if (this->mesh[j].center() > this->mesh[j+1].center())
+				swap(this->mesh,j,j+1);
+	for (int i = 0; i < std::size(this->mesh); i++) 
+	{
 		this->mesh[i].draw_3d(window);
 	}
 }
@@ -282,4 +397,11 @@ void OBJECT::draw(sf::RenderWindow& window) const
 void OBJECT::operator=(std::vector<TRIANGLE> mesh)
 {
 	this->mesh = mesh;
+}
+
+void OBJECT::rotate(float angle)
+{
+	for (int i = 0; i < std::size(this->mesh); i++) {
+		this->mesh[i].rotate(angle);
+	}
 }

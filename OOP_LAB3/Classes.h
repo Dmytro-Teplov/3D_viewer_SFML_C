@@ -3,6 +3,7 @@
 #include <vector>
 #include <deque>
 #include <algorithm>
+#include <math.h> 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 //float window_size_x = 1000;
@@ -26,7 +27,8 @@ public:
 
 
 	sf::Color color;
-
+	float distance(POINT a, POINT b);
+	float distance(float x1, float y1,float x2,float y2);
 	void middle(POINT a,POINT b);
 	void create(float a, float b,float c);
 	void clear();
@@ -34,12 +36,13 @@ public:
 	bool operator>(POINT p);
 	bool operator<(POINT p);
 	void operator=(POINT p);
+	//void operator=(const POINT p);
 	bool operator==(POINT p);
 	POINT operator*(float k);
 	bool null();
 	friend std::ostream& operator<<(std::ostream& os, POINT p);
 	static bool compare_x(POINT p1,POINT p2);
-	void rotate(float angle);
+	void rotate(float angle,bool is3d=false);
 
 };
 class LINE 
@@ -95,19 +98,28 @@ public:
 
 
 	void create(POINT v1, POINT v2, POINT v3);
+	float center() const;
 	void draw(sf::RenderWindow& window) const;
 	void draw_3d(sf::RenderWindow& window) const;
 	void paint(std::string Col);
 	void paint(HEX color);
+	void rotate(float angle);
+	void operator=(TRIANGLE tris);
+	//void operator=(const TRIANGLE tris) const;
 };
 
 class OBJECT
 {
 public:
+	
+	
 	std::vector<TRIANGLE> mesh;
-	void draw(sf::RenderWindow& window) const;
+	
+	
+	void draw(sf::RenderWindow& window);
 	void create(std::vector<TRIANGLE> mesh);
 	void operator=(std::vector<TRIANGLE> mesh);
 	void operator=(OBJECT obj);
+	void rotate(float angle);
 };
 
