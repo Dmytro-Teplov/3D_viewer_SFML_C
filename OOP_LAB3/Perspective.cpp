@@ -36,7 +36,8 @@ int main()
     t6.paint(violet);
 
     OBJECT cube;
-    
+    std::vector<TRIANGLE> mesh = {t1,t2,t3,t4,t5,t6};
+    cube = mesh;
     sf::RenderWindow window(sf::VideoMode(1000, 600), "SFML works!");
 
     sf::Vector2u size = window.getSize();
@@ -52,18 +53,11 @@ int main()
         }
         window.clear();
 
-        //tris.paint("Green");
-        //tris.draw(window);
-        origin.draw(window);
+       
         
-        //tris.paint("Red");
-        //tris.draw(window);
-        t1.draw_3d(window);
-        t2.draw_3d(window);
-        t3.draw_3d(window);
-        t4.draw_3d(window);
-        t5.draw_3d(window);
-        t6.draw_3d(window);
+        //cube.draw(window);
+
+        origin.draw(window);
         
         window.display();
     }

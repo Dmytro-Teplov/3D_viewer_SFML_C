@@ -39,6 +39,7 @@ public:
 	bool null();
 	friend std::ostream& operator<<(std::ostream& os, POINT p);
 	static bool compare_x(POINT p1,POINT p2);
+	void rotate(float angle);
 
 };
 class LINE 
@@ -105,6 +106,8 @@ class OBJECT
 public:
 	std::vector<TRIANGLE> mesh;
 	void draw(sf::RenderWindow& window) const;
-	void create()
+	void create(std::vector<TRIANGLE> mesh);
+	void operator=(std::vector<TRIANGLE> mesh);
+	void operator=(OBJECT obj);
 };
 

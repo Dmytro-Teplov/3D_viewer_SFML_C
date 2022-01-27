@@ -85,6 +85,11 @@ bool POINT::compare_x(POINT p1,POINT p2)
 	return p1.x<p2.x;
 }
 
+void POINT::rotate(float angle)
+{
+
+}
+
 void EDGE::create(POINT a, POINT b)
 {
 	this->p1=a;
@@ -269,5 +274,12 @@ bool LINE::operator==(LINE l)
 
 void OBJECT::draw(sf::RenderWindow& window) const
 {
-	
+	for (int i = 0; i < std::size(this->mesh); i++) {
+		this->mesh[i].draw_3d(window);
+	}
+}
+
+void OBJECT::operator=(std::vector<TRIANGLE> mesh)
+{
+	this->mesh = mesh;
 }
