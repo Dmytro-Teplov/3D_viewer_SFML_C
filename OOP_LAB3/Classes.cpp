@@ -82,21 +82,19 @@ void POINT::operator=(POINT d)
 	this->y = d.y;
 	this->z = d.z;
 }
-//void POINT::operator=(const POINT d)
-//{
-//	this->x = d.x;
-//	this->y = d.y;
-//	this->z = d.z;
-//}
+
 bool POINT::operator==(POINT p)
 {
 	return this->x==p.x&& this->y == p.y;
 }
+
 POINT POINT::operator*(float k)
 {
-	POINT newP;
-	newP.create(this->x * k, this->y * k,this->z*k);
-	return newP;
+	
+	this->x=this->x* k;
+	this->y = this->y* k;
+	this->z = this->z* k;
+	return *this;
 }
 bool POINT::null()
 {
@@ -121,7 +119,11 @@ void POINT::rotate(float angle,bool is3d)
 	}
 	angle = to_rads(angle);
 	float r2 = pow(x, 2) + pow(y, 2);
-	float k = y / x;
+	float k;
+	if (x != 0)
+		k = y / x;
+	else
+		k = y;
 	float k_new = tan(atan(k)+angle);
 	float D = (1 + pow(k_new, 2)) * r2;
 	float x_new1 = sqrt(D) / ((1 + pow(k_new, 2)));
@@ -222,7 +224,8 @@ void TRIANGLE::draw_3d(sf::RenderWindow& window) const
 	convex.setPoint(0, sf::Vector2f(this->v1.x*k1, -this->v1.y*k1));
 	convex.setPoint(1, sf::Vector2f(this->v2.x*k2, -this->v2.y*k2));
 	convex.setPoint(2, sf::Vector2f(this->v3.x*k3, -this->v3.y*k3));
-
+	//convex.setOutlineColor(this->border_color);
+	//convex.setOutlineThickness(this->border_width);
 	convex.setFillColor(this->color);
 	window.draw(convex);
 }
@@ -235,7 +238,7 @@ void TRIANGLE::create(POINT v1, POINT v2, POINT v3)
 float TRIANGLE::center() const
 {
 	POINT centroid;
-	centroid.create((this->v1.x + this->v2.x + this->v3.x)/3, (this->v1.y + this->v2.y + this->v3.y) / 3, (this->v1.z + this->v2.z + this->v3.z) / 3);
+	centroid.create((this->v1.x + this->v2.x + this->v3.x)/3.0, (this->v1.y + this->v2.y + this->v3.y) / 3.0, (this->v1.z + this->v2.z + this->v3.z) / 3.0);
 	return centroid.z;
 }
 void TRIANGLE::paint(std::string Col)
@@ -285,15 +288,13 @@ void TRIANGLE::operator=(TRIANGLE tris)
 	this->border_width = tris.border_width;
 }
 
-//void TRIANGLE::operator=(const TRIANGLE tris) const
-//{
-//	this->border_color = tris.border_color;
-//	this->color = tris.color;
-//	this->v1 = tris.v1;
-//	this->v2 = tris.v2;
-//	this->v3 = tris.v3;
-//	this->border_width = tris.border_width;
-//}
+TRIANGLE TRIANGLE::operator*(float k)
+{
+	this->v1 = this->v1 * k;
+	this->v2 = this->v2 * k;
+	this->v3 = this->v3 * k;
+	return *this;
+}
 
 std::ostream& operator<<(std::ostream& os, POINT p)
 {
@@ -303,6 +304,22 @@ std::ostream& operator<<(std::ostream& os, POINT p)
 std::ostream& operator<<(std::ostream& os, EDGE& e)
 {
 	os << "[" << e.p1 << "," << e.p2 << "]\n";
+	return os;
+}
+std::ostream& operator<<(std::ostream& os, TRIANGLE t)
+{
+	os << "(" << t.v1.x << "," << t.v1.y << "," << t.v1.z << ")\n";
+	os << "(" << t.v2.x << "," << t.v2.y << "," << t.v2.z << ")\n";
+	os << "(" << t.v3.x << "," << t.v3.y << "," << t.v3.z << ")\n";
+	return os;
+}
+std::ostream& operator<<(std::ostream& os, OBJECT o)
+{
+	for (int i = 0; i < std::size(o.mesh); i++)
+	{
+		os << "tris " << i + 1 << "\n";
+		os << o.mesh[i];
+	}
 	return os;
 }
 std::ostream& operator<<(std::ostream& os, LINE l)
@@ -373,22 +390,60 @@ bool LINE::operator==(LINE l)
 }
 void swap(std::vector<TRIANGLE>& tris, int pos1, int pos2)
 {
-	
 	TRIANGLE t1;
 	t1=tris[pos1];
 	tris[pos1] = tris[pos2];
 	tris[pos2] = t1;
 }
 
+int partition(std::vector<TRIANGLE>& tris, int low, int high)
+{
+	int pivot = tris[high].center();
+	int i = (low - 1);
+	for (int j = low; j <= high - 1; j++)
+	{
+		if (tris[j].center() < pivot)
+		{
+			i++; 
+			
+			swap(tris, i, j);
+		}
+	}
+	
+	swap(tris, i+1,high);
+	return (i + 1);
+}
+void quickSort(std::vector<TRIANGLE>& tris, int low, int high)
+{
+	
+	if (low < high)
+	{
+		int pi = partition(tris, low, high);
+		quickSort(tris, low, pi - 1);
+		quickSort(tris, pi + 1, high);
+	}
+}
+void OBJECT::scale(int percent)
+{
+	for (int i = 0; i < std::size(this->mesh); i++)
+	{
+		this->mesh[i];
+	}
+}
 void OBJECT::draw(sf::RenderWindow& window)
 {
 
-	int i, j;
-	for (i = 0; i < std::size(this->mesh) - 1; i++)
-		for (j = 0; j < std::size(this->mesh) - i - 1; j++)
-			if (this->mesh[j].center() > this->mesh[j+1].center())
-				swap(this->mesh,j,j+1);
+	quickSort(this->mesh, 0, std::size(this->mesh) - 1);
 	for (int i = 0; i < std::size(this->mesh); i++) 
+	{
+		this->mesh[i].draw_3d(window);
+	}
+}
+
+void OBJECT::renderInHalfs(sf::RenderWindow& window)
+{
+	quickSort(this->mesh, 2*(std::size(this->mesh)/3), std::size(this->mesh) - 1);
+	for (int i = 2 * (std::size(this->mesh) / 3); i < std::size(this->mesh); i++)
 	{
 		this->mesh[i].draw_3d(window);
 	}
@@ -396,7 +451,15 @@ void OBJECT::draw(sf::RenderWindow& window)
 
 void OBJECT::operator=(std::vector<TRIANGLE> mesh)
 {
+
 	this->mesh = mesh;
+	for (int i = 0; i < std::size(this->mesh); i++)
+	{
+		if (i % 2)
+			this->mesh[i].paint("Green");
+		else
+			this->mesh[i].paint("Blue");
+	}
 }
 
 void OBJECT::rotate(float angle)

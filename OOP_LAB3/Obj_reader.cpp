@@ -40,11 +40,10 @@ std::vector<TRIANGLE> reading(std::string filename)
 	myfile.open(filename);
 	int k = 0;
 	int i = 2;
-	while (getline(myfile, text)) {
-		//std::cout << text<<"\n";
+	while (getline(myfile, text)) 
+	{
 		if (text[0]=='v'&& text[1] == ' ')
 		{
-			//std::cout << text[i];
 			while (text[i] != ' ')
 			{
 				number += std::string(1, text[i]);
@@ -52,6 +51,7 @@ std::vector<TRIANGLE> reading(std::string filename)
 					i++;
 			}
 			xyz.push_back(std::stof(number));
+			//std::cout << xyz.back()<<"\t";
 			i++;
 			number = "";
 			while (text[i] != ' ')
@@ -61,6 +61,7 @@ std::vector<TRIANGLE> reading(std::string filename)
 					i++;
 			}
 			xyz.push_back(std::stof(number));
+			//std::cout << xyz.back() << "\t";
 			i++;
 			number = "";
 			while ((text[i] != ' ')&& (i + 1 < std::size(text)))
@@ -70,6 +71,7 @@ std::vector<TRIANGLE> reading(std::string filename)
 					i++;
 			}
 			xyz.push_back(std::stof(number));
+			//std::cout << xyz.back() << "\n";
 			i = 2;
 			number = "";
 			coords.push_back(xyz);
@@ -82,29 +84,6 @@ std::vector<TRIANGLE> reading(std::string filename)
 		{
 			while (i < std::size(text))
 			{
-				/*if (text[i] == ' ')
-				{
-					k = i;
-					while (text[k-4] != ' ')
-					{
-						number += std::string(1, text[k-4]);
-						k--;
-					}
-
-					vert.push_back(std::stoi(number));
-					number = "";
-				}
-				if (i + 1 >= std::size(text))
-				{
-					k = i;
-					while (text[k-3] != ' ')
-					{
-						number += std::string(1, text[k - 3]);
-						k--;
-					}
-					vert.push_back(std::stoi(number));
-					number = "";
-				}*/
 				if (text[i] == '/'&& text[i+1] == '/')
 				{
 					k = i-1;
@@ -137,17 +116,20 @@ std::vector<TRIANGLE> reading(std::string filename)
 	{
 		p1.create(coords[j][0], coords[j][1], coords[j][2]);
 		p.push_back(p1);
+		//std::cout << p1<<"\n";
 	}
 
 	//std::cout << p[vertices[1106][0] - 1];
 	for (int j = 0; j < std::size(vertices); j++)
 	{
 		tris.create(p[vertices[j][0] - 1], p[vertices[j][1] - 1], p[vertices[j][2] - 1]);
-		if (j % 2)
+		tris.border_width = 1;
+		/*if (j % 2)
 			tris.paint("Blue");
 		else
-			tris.paint("Green");
+			tris.paint("Green");*/
 		t.push_back(tris);
+		//std::cout << tris;
 	}
 	mesh = t;
 	myfile.close();

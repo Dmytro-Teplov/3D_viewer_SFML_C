@@ -92,8 +92,8 @@ public:
 	POINT v1;
 	POINT v2;
 	POINT v3;
-	sf::Color color = sf::Color(100, 100, 100);;
-	sf::Color border_color;
+	sf::Color color = sf::Color(100, 100, 100);
+	sf::Color border_color = sf::Color(50, 50, 50);
 	int border_width = 0;
 
 
@@ -105,6 +105,8 @@ public:
 	void paint(HEX color);
 	void rotate(float angle);
 	void operator=(TRIANGLE tris);
+	TRIANGLE operator*(float k);
+	friend std::ostream& operator<<(std::ostream& os, TRIANGLE t);
 	//void operator=(const TRIANGLE tris) const;
 };
 
@@ -115,11 +117,13 @@ public:
 	
 	std::vector<TRIANGLE> mesh;
 	
-	
+	void scale(int percent);
 	void draw(sf::RenderWindow& window);
+	void renderInHalfs(sf::RenderWindow& window);
 	void create(std::vector<TRIANGLE> mesh);
 	void operator=(std::vector<TRIANGLE> mesh);
 	void operator=(OBJECT obj);
+	friend std::ostream& operator<<(std::ostream& os, OBJECT o);
 	void rotate(float angle);
 };
 
