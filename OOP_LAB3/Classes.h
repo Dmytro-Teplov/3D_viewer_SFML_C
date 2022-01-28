@@ -92,7 +92,7 @@ public:
 	POINT v1;
 	POINT v2;
 	POINT v3;
-	sf::Color color;
+	sf::Color color = sf::Color(100, 100, 100);;
 	sf::Color border_color;
 	int border_width = 0;
 

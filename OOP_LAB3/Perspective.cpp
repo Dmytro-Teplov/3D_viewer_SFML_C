@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Classes.h"
+#include "obj_reader.h"
 
 int main()
 {
@@ -8,6 +8,12 @@ int main()
     HEX violet,violet2;
     violet.create(167, 128,255);
     violet2.create(167, 80,255);
+
+    OBJECT cubee;
+
+    cubee=reading("land.obj");
+
+
 
     POINT p,p1, p2, p3, p4, p5, p6, p7, p8;
     p.create(30,60,60);
@@ -56,9 +62,9 @@ int main()
         
         p.draw(window);
         p.rotate(10,true);
-        cube.draw(window);
-        cube.rotate(1);
-        sf::sleep(sf::milliseconds(20));
+        cubee.draw(window);
+        cubee.rotate(10);
+        //sf::sleep(sf::milliseconds(20));
        
         
         //cube.draw(window);

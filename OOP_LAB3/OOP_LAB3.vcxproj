@@ -149,10 +149,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Classes.cpp" />
+    <ClCompile Include="Obj_reader.cpp" />
     <ClCompile Include="Perspective.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes.h" />
+    <ClInclude Include="Obj_reader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
