@@ -53,9 +53,12 @@ public:
 	float thicc=4;
 
 	void create(POINT a, POINT b);
+	void create(POINT a, std::vector<float> normalv);
 	void create(float x1, float x2, float y1, float y2);
 	void clear();
-	void draw(sf::RenderWindow& window) const;
+	void draw(sf::RenderWindow& window) ;
+	void draw_3d(sf::RenderWindow& window) const;
+	void rotate(float angle);
 	friend std::ostream& operator<<(std::ostream& os, EDGE& e);
 	void operator=(EDGE e);
 };
@@ -67,20 +70,23 @@ public:
 	POINT v1;
 	POINT v2;
 	POINT v3;
+	std::vector<float> normalv;
 	sf::Color color = sf::Color(100, 100, 100);
 	sf::Color border_color = sf::Color(50, 50, 50);
 	int border_width = 0;
+
 
 	void scale_this(float lambda);
 	TRIANGLE scale(float lambda);
 	void create(POINT v1, POINT v2, POINT v3);
 	float center() const;
-	POINT center(bool is2d);
+	POINT center_point();
 	void draw(sf::RenderWindow& window) const;
-	void draw_3d(sf::RenderWindow& window) const;
+	void draw_3d(sf::RenderWindow& window, bool normal_visible=false) ;
 	void paint(std::string Col);
 	void paint(HEX color);
 	void rotate(float angle);
+	std::vector<float> normal();
 	void operator=(TRIANGLE tris);
 	TRIANGLE operator*(float k);
 	friend std::ostream& operator<<(std::ostream& os, TRIANGLE t);
@@ -95,7 +101,7 @@ public:
 	std::vector<TRIANGLE> border;
 	
 	void scale(float percent);
-	void draw(sf::RenderWindow& window);
+	void draw(sf::RenderWindow& window, bool normal_visible = false);
 	void renderInHalfs(sf::RenderWindow& window);
 	void create_hard_mode(std::vector<TRIANGLE> mesh);
 	void operator=(std::vector<TRIANGLE> mesh);

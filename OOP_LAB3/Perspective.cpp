@@ -11,7 +11,6 @@ int main()
     violet2.create(167, 80,255);
     POINT v1, v2, v3;
     v1.create(100,123,50);
-
     v2.create(50,-40,30);
     v3.create(-40,10,100);
     TRIANGLE tris1,tris2;
@@ -19,9 +18,12 @@ int main()
     tris2 = tris1;
     tris1.paint(violet);
     tris2.scale(0.5);
+    EDGE e;
+    e.create(tris1.center_point(),tris1.normal());
     OBJECT cubee;
-    cubee.create_hard_mode(reading("jester.obj"));
-    cubee.scale(1.5);
+    cubee = reading("CUBE2.obj");
+    //cubee.create_hard_mode(reading("xanadu.obj"));
+    cubee.scale(2);
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML works!");
 
     sf::Vector2u size = window.getSize();
@@ -40,11 +42,14 @@ int main()
         
         /*p.draw(window);
         p.rotate(10,true);*/
-        cubee.draw(window);
-        cubee.rotate(5);
+        cubee.draw(window,true);
+        cubee.rotate(1);
         //sf::sleep(sf::milliseconds(10));
-        
-        
+        //tris1.draw_3d(window,true);
+        //tris1.rotate(1);
+        //tris1.center_point().draw(window);
+        //e.draw_3d(window);
+        //e.rotate(1);
         //cube.draw(window);
         origin.draw(window);
         

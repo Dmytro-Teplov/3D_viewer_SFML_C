@@ -102,11 +102,9 @@ std::vector<TRIANGLE> reading(std::string filename)
 			vert.clear();
 			i = 2;
 		}
-		//k++;
-		
+
 	}
-	/*show(coords);
-	show(vertices);*/
+
 	POINT p1;
 	std::vector<POINT> p;
 	TRIANGLE tris;
@@ -116,20 +114,13 @@ std::vector<TRIANGLE> reading(std::string filename)
 	{
 		p1.create(coords[j][0], coords[j][1], coords[j][2]);
 		p.push_back(p1);
-		//std::cout << p1<<"\n";
 	}
 
-	//std::cout << p[vertices[1106][0] - 1];
 	for (int j = 0; j < std::size(vertices); j++)
 	{
 		tris.create(p[vertices[j][0] - 1], p[vertices[j][1] - 1], p[vertices[j][2] - 1]);
 		tris.border_width = 1;
-		/*if (j % 2)
-			tris.paint("Blue");
-		else
-			tris.paint("Green");*/
 		t.push_back(tris);
-		//std::cout << tris;
 	}
 	mesh = t;
 	myfile.close();
