@@ -30,7 +30,7 @@ public:
 	float distance(POINT a, POINT b);
 	float distance(float x1, float y1,float x2,float y2);
 	void middle(POINT a,POINT b);
-	void create(float a, float b,float c);
+	void create(float a, float b, float c = 0);
 	void clear();
 	void draw(sf::RenderWindow& window) const;
 	bool operator>(POINT p);
@@ -45,40 +45,15 @@ public:
 	void rotate(float angle,bool is3d=false);
 
 };
-class LINE 
-{
-public:
-	float k;
-	float b;
-
-	void create(int k,int b);
-	void update(POINT p);
-	friend std::ostream& operator<<(std::ostream& os, LINE l);
-	bool operator==(LINE l);
-};
-class PARABOLA 
-{
-public:
-	POINT focus;
-	LINE directrix;
-	float a = 0, b = 0, c = 0;
-	float MAX_X = 1000, MIN_X = 0;
-
-	void create_parabola(LINE directrix, POINT focus);
-	void update(LINE directrix);
-	friend std::ostream& operator<<(std::ostream& os, PARABOLA& pa);
-	float find_y(float x);
-	bool operator==(PARABOLA pa);
-protected:
-	void calculate();
-};
 class EDGE
 {
 public:
 	POINT p1, p2;
 	POINT s1, s2;
+	float thicc=4;
 
 	void create(POINT a, POINT b);
+	void create(float x1, float x2, float y1, float y2);
 	void clear();
 	void draw(sf::RenderWindow& window) const;
 	friend std::ostream& operator<<(std::ostream& os, EDGE& e);
@@ -96,9 +71,11 @@ public:
 	sf::Color border_color = sf::Color(50, 50, 50);
 	int border_width = 0;
 
-
+	void scale_this(float lambda);
+	TRIANGLE scale(float lambda);
 	void create(POINT v1, POINT v2, POINT v3);
 	float center() const;
+	POINT center(bool is2d);
 	void draw(sf::RenderWindow& window) const;
 	void draw_3d(sf::RenderWindow& window) const;
 	void paint(std::string Col);
@@ -107,7 +84,6 @@ public:
 	void operator=(TRIANGLE tris);
 	TRIANGLE operator*(float k);
 	friend std::ostream& operator<<(std::ostream& os, TRIANGLE t);
-	//void operator=(const TRIANGLE tris) const;
 };
 
 class OBJECT
@@ -116,11 +92,12 @@ public:
 	
 	
 	std::vector<TRIANGLE> mesh;
+	std::vector<TRIANGLE> border;
 	
-	void scale(int percent);
+	void scale(float percent);
 	void draw(sf::RenderWindow& window);
 	void renderInHalfs(sf::RenderWindow& window);
-	void create(std::vector<TRIANGLE> mesh);
+	void create_hard_mode(std::vector<TRIANGLE> mesh);
 	void operator=(std::vector<TRIANGLE> mesh);
 	void operator=(OBJECT obj);
 	friend std::ostream& operator<<(std::ostream& os, OBJECT o);
