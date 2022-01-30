@@ -5,15 +5,12 @@ double to_rads(double degree)
 	return (degree * (pi / 180));
 }
 
-
-
 void HEX::create(int red_num, int green_num, int blue_num)
 {
 	this->red = red_num;
 	this->green = green_num;
 	this->blue = blue_num;
 }
-
 
 float POINT::distance(POINT a, POINT b)
 {
@@ -29,17 +26,21 @@ void POINT::middle(POINT a, POINT b)
 {
 	this->x = (a.x + b.x) / 2;
 	this->y = (a.y + b.y) / 2;
+	this->z = (a.z + b.z) / 2;
 }
 void POINT::create(float a, float b,float c)
 {
 	this->x = a;
 	this->y = b;
 	this->z = c;
+	this->initialized = true;
 }
 void POINT::clear()
 {
 	this->x = 0;
 	this->y = 0;
+	this->z = 0;
+	this->initialized = false;
 }
 void POINT::draw(sf::RenderWindow& window) const
 {
@@ -68,6 +69,7 @@ void POINT::draw(sf::RenderWindow& window) const
 	window.draw(shape);
 	
 }
+
 bool POINT::operator>(POINT d)
 {
 	return this->y > d.y;
@@ -81,6 +83,7 @@ void POINT::operator=(POINT d)
 	this->x = d.x;
 	this->y = d.y;
 	this->z = d.z;
+	this->initialized = d.initialized;
 }
 
 bool POINT::operator==(POINT p)
@@ -95,6 +98,13 @@ POINT POINT::operator*(float k)
 	this->y = this->y* k;
 	this->z = this->z* k;
 	return *this;
+}
+POINT POINT::operator-(POINT b)
+{
+	POINT a;
+	a.create(this->x-b.x,this->y-b.y,this->z-b.z);
+	a.initialized = this->initialized;
+	return a;
 }
 bool POINT::null()
 {
@@ -158,7 +168,21 @@ void POINT::rotate(float angle,bool is3d)
 			this->y = y_new2;
 		}
 	}
+
 }
+
+std::vector<float> POINT::vector(POINT A)
+{
+
+	POINT v;
+	v = *this - A;
+	std::vector<float> vec;
+	vec.push_back(v.x);
+	vec.push_back(v.y);
+	vec.push_back(v.z);
+	return vec;
+}
+
 
 void EDGE::create(POINT a, POINT b)
 {
@@ -224,6 +248,7 @@ void EDGE::rotate(float angle)
 {
 	this->p1.rotate(angle, true);
 	this->p2.rotate(angle, true);
+
 }
 void EDGE::operator=(EDGE e)
 {
@@ -232,6 +257,7 @@ void EDGE::operator=(EDGE e)
 	this->s1 = e.s1;
 	this->s2 = e.s2;
 }
+
 
 void TRIANGLE::draw(sf::RenderWindow& window) const
 {
@@ -246,7 +272,7 @@ void TRIANGLE::draw(sf::RenderWindow& window) const
 	window.draw(convex);
 	
 }
-void TRIANGLE::draw_3d(sf::RenderWindow& window, bool normal_visible) 
+void TRIANGLE::draw_3d(sf::RenderWindow& window, POINT light, bool normal_visible)
 {
 	sf::ConvexShape convex;
 	convex.setPointCount(3);
@@ -258,14 +284,27 @@ void TRIANGLE::draw_3d(sf::RenderWindow& window, bool normal_visible)
 	convex.setPoint(0, sf::Vector2f(this->v1.x * k1, -this->v1.y * k1));
 	convex.setPoint(1, sf::Vector2f(this->v2.x * k2, -this->v2.y * k2));
 	convex.setPoint(2, sf::Vector2f(this->v3.x * k3, -this->v3.y * k3));
+	this->normal();
+	float rad = this->angle(this->center_point().vector(light));
+	sf::Color col = this->color;
+	double pi = 3.14159265359;
+	this->lightness(rad/ pi);
 	convex.setFillColor(this->color);
-	window.draw(convex);
-	if(normal_visible)
+	if (normal_visible)
 	{
 		EDGE n;
 		n.create(this->center_point(), this->normal());
 		n.draw_3d(window);
 	}
+	window.draw(convex);
+	/*if(normal_visible)
+	{
+		EDGE n;
+		n.create(this->center_point(), this->normal());
+		n.draw_3d(window);
+	}*/
+	
+
 }
 void TRIANGLE::scale_this(float lambda)
 {
@@ -310,18 +349,29 @@ void TRIANGLE::create(POINT v1, POINT v2, POINT v3)
 	this->v3 = v3;
 
 }
-float TRIANGLE::center() const
+float TRIANGLE::center()
 {
-	POINT centroid;
-	centroid.create((this->v1.x + this->v2.x + this->v3.x)/3.0, (this->v1.y + this->v2.y + this->v3.y) / 3.0, (this->v1.z + this->v2.z + this->v3.z) / 3.0);
-	return centroid.z;
+	if (!this->centroid.initialized) 
+	{
+		POINT centre;
+		centre.create((this->v1.x + this->v2.x + this->v3.x) / 3.0, (this->v1.y + this->v2.y + this->v3.y) / 3.0, (this->v1.z + this->v2.z + this->v3.z) / 3.0);
+		this->centroid = centre;
+		//std::cout << this->centroid.z << "\n";
+	}
+	
+	return this->centroid.z;
 }
 
 POINT TRIANGLE::center_point()
 {
-	POINT centroid;
-	centroid.create((this->v1.x + this->v2.x + this->v3.x) / 3.0, (this->v1.y + this->v2.y + this->v3.y) / 3.0, (this->v1.z + this->v2.z + this->v3.z) / 3.0);
-	return centroid;
+	if (!this->centroid.initialized)
+	{
+		POINT centre;
+		centre.create((this->v1.x + this->v2.x + this->v3.x) / 3.0, (this->v1.y + this->v2.y + this->v3.y) / 3.0, (this->v1.z + this->v2.z + this->v3.z) / 3.0);
+		this->centroid = centre;
+		//std::cout << this->centroid.z << "\n";
+	}
+	return this->centroid;
 }
 void TRIANGLE::paint(std::string Col)
 {
@@ -347,17 +397,34 @@ void TRIANGLE::paint(std::string Col)
 	}
 
 }
-
 void TRIANGLE::paint(HEX color)
 {
 	this->color = sf::Color(color.red, color.green, color.blue);
 }
-
+void TRIANGLE::lightness(float l)
+{
+	l = abs(l);
+	float m=std::max(this->color.r, std::max(this->color.g, this->color.b));
+	if (m == 0)
+	{
+		this->color.r = 255 * l;
+		this->color.g = 255 * l;
+		this->color.b = 255 * l;
+	}
+	else
+	{
+		this->color.r *= (255 * l) / m;
+		this->color.g *= (255 * l) / m;
+		this->color.b *= (255 * l) / m;
+	}
+	
+}
 void TRIANGLE::rotate(float angle)
 {
 	this->v1.rotate(angle, true);
 	this->v2.rotate(angle, true);
 	this->v3.rotate(angle, true);
+	this->centroid.initialized=false;
 }
 
 std::vector<float> TRIANGLE::normal()
@@ -385,8 +452,6 @@ std::vector<float> TRIANGLE::normal()
 		this->normalv[1]=ny;
 		this->normalv[2]=nz;
 	}
-	
-
 	return this->normalv;
 }
 
@@ -398,6 +463,7 @@ void TRIANGLE::operator=(TRIANGLE tris)
 	this->v2 = tris.v2;
 	this->v3 = tris.v3;
 	this->border_width = tris.border_width;
+	this->centroid = tris.centroid;
 }
 
 TRIANGLE TRIANGLE::operator*(float k)
@@ -406,6 +472,15 @@ TRIANGLE TRIANGLE::operator*(float k)
 	this->v2 = this->v2 * k;
 	this->v3 = this->v3 * k;
 	return *this;
+}
+
+
+float TRIANGLE::angle(std::vector<float> vec2)
+{
+	std::vector<float> vec1 = this->normalv;
+	float angle = std::acos((vec1[0] * vec2[0] + vec1[1] * vec2[1] + vec1[2] * vec2[2]) / (sqrt(pow(vec1[0], 2) + pow(vec1[1], 2) + pow(vec1[2], 2)) * sqrt(pow(vec2[0], 2) + pow(vec2[1], 2) + pow(vec2[2], 2))));
+	//this->normalv.clear();
+	return angle;
 }
 
 std::ostream& operator<<(std::ostream& os, POINT p)
@@ -456,7 +531,7 @@ void swap(std::vector<TRIANGLE>& tris, int pos1, int pos2)
 }
 int partition(std::vector<TRIANGLE>& tris, int low, int high)
 {
-	int pivot = tris[high].center();
+	float pivot = tris[high].center();
 	int i = (low - 1);
 	for (int j = low; j <= high - 1; j++)
 	{
@@ -481,7 +556,8 @@ void quickSort(std::vector<TRIANGLE>& tris, int low, int high)
 
 int partition2(std::vector<TRIANGLE>& tris, std::vector<TRIANGLE>& border, int low, int high)
 {
-	int pivot = tris[high].center();
+	float pivot = tris[high].center();
+
 	int i = (low - 1);
 	for (int j = low; j <= high - 1; j++)
 	{
@@ -506,34 +582,43 @@ void quickSort2(std::vector<TRIANGLE>& tris, std::vector<TRIANGLE>& border, int 
 	}
 }
 
-void OBJECT::draw(sf::RenderWindow& window, bool normal_visible)
+void OBJECT::draw(sf::RenderWindow& window, POINT light, bool normal_visible)
 {
+
 	if (this->border.empty())
 	{
-		quickSort(this->mesh, 0, std::size(this->mesh) - 1);
+		if (!this->sorted)
+		{
+			quickSort(this->mesh, 0, std::size(this->mesh) - 1);
+			this->sorted = true;
+		}
+
 		for (int i = 0; i < std::size(this->mesh); i++)
 		{
-			this->mesh[i].draw_3d(window, normal_visible);
+			this->mesh[i].draw_3d(window,light, normal_visible);
+			//std::cout << this->mesh[i].center()<<"\n";
+			//this->mesh[i].centroid.clear();
 		}
+		//std::cout << "\n--------";
 	}
 	else
 	{
 		quickSort2(this->mesh,this->border, 0, std::size(this->mesh) - 1);
 		for (int i = 0; i < std::size(this->mesh); i++)
 		{
-			this->mesh[i].draw_3d(window, normal_visible);
-			this->border[i].draw_3d(window);
+			this->mesh[i].draw_3d(window, light, normal_visible);
+			this->border[i].draw_3d(window, light);
 		}
 	}
 	
 }
 
-void OBJECT::renderInHalfs(sf::RenderWindow& window)
+void OBJECT::renderInHalfs(sf::RenderWindow& window, POINT light)
 {
 	quickSort(this->mesh, 2*(std::size(this->mesh)/3), std::size(this->mesh) - 1);
 	for (int i = 2 * (std::size(this->mesh) / 3); i < std::size(this->mesh); i++)
 	{
-		this->mesh[i].draw_3d(window);
+		this->mesh[i].draw_3d(window, light);
 	}
 }
 
@@ -580,6 +665,6 @@ void OBJECT::rotate(float angle)
 			this->border[i].rotate(angle);
 		}
 	}
-
+	this->sorted = false;
 	
 }
