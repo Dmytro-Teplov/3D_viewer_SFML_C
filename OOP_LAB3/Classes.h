@@ -25,6 +25,7 @@ public:
 	float y = 0;
 	float z = 0;
 	bool initialized = false;
+	float r_angle=0;
 
 	sf::Color color;
 	float distance(POINT a, POINT b);
@@ -44,7 +45,7 @@ public:
 	bool null();
 	friend std::ostream& operator<<(std::ostream& os, POINT p);
 	static bool compare_x(POINT p1,POINT p2);
-	void rotate(float angle,bool is3d=false);
+	POINT rotate(float angle,bool is3d=false);
 	std::vector<float> vector(POINT A);
 };
 class EDGE
@@ -75,6 +76,7 @@ public:
 	POINT v2;
 	POINT v3;
 	POINT centroid;
+	float r_angle=0;
 	std::vector<float> normalv;
 	sf::Color color = sf::Color(100, 100, 100);
 	sf::Color border_color = sf::Color(50, 50, 50);
@@ -88,14 +90,14 @@ public:
 	void paint(std::string Col);
 	void paint(HEX color);
 	void lightness(float l);
-	void rotate(float angle);
+	TRIANGLE rotate(float angle);
 	void operator=(TRIANGLE tris);
 	float angle(std::vector<float> vec2);
 	POINT center_point();
 	TRIANGLE scale(float lambda);
 	TRIANGLE operator*(float k);
 	friend std::ostream& operator<<(std::ostream& os, TRIANGLE t);
-	std::vector<float> normal();
+	std::vector<float> normal(bool update= true);
 };
 
 class OBJECT
@@ -105,15 +107,16 @@ public:
 	
 	std::vector<TRIANGLE> mesh;
 	std::vector<TRIANGLE> border;
+	float r_angle = 0;
 	bool sorted = false;
 
 	void scale(float percent);
-	void draw(sf::RenderWindow& window, POINT light, bool normal_visible = false, bool islit = false);
+	void draw(sf::RenderWindow& window, POINT light, float angle ,bool normal_visible = false, bool islit = false);
 	void renderInHalfs(sf::RenderWindow& window, POINT light);
 	void create_hard_mode(std::vector<TRIANGLE> mesh);
 	void operator=(std::vector<TRIANGLE> mesh);
 	void operator=(OBJECT obj);
 	friend std::ostream& operator<<(std::ostream& os, OBJECT o);
-	void rotate(float angle);
+	OBJECT rotate(float angle);
 };
 

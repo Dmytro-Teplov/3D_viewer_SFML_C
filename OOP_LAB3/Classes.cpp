@@ -4,7 +4,24 @@ double to_rads(double degree)
 	double pi = 3.14159265359;
 	return (degree * (pi / 180));
 }
+std::vector<double> multiply(std::vector<std::vector<double>> A, std::vector<double> b)
+{
+	std::vector<double> c;
+	double m = 0;
+	//show(A, b);
+	for (int i = 0; i < std::size(A); i++)
+	{
+		for (int j = 0; j < std::size(A[0]); j++)
+		{
+			m += A[i][j] * b[j];
+		}
+		c.push_back(m);
+		//show(c);
+		m = 0;
+	}
 
+	return c;
+}
 void HEX::create(int red_num, int green_num, int blue_num)
 {
 	this->red = red_num;
@@ -85,6 +102,7 @@ void POINT::operator=(POINT d)
 	this->y = d.y;
 	this->z = d.z;
 	this->initialized = d.initialized;
+	this->r_angle = d.r_angle;
 }
 
 bool POINT::operator==(POINT p)
@@ -116,10 +134,11 @@ bool POINT::compare_x(POINT p1,POINT p2)
 	return p1.x<p2.x;
 }
 
-void POINT::rotate(float angle,bool is3d)
+POINT POINT::rotate(float angle,bool is3d)
 {
-	float x = this->x;
+	/*float x = this->x;
 	float y;
+	this->r_angle = angle;
 	if (is3d) 
 	{
 		y = this->z;
@@ -141,32 +160,87 @@ void POINT::rotate(float angle,bool is3d)
 	float x_new2 = -sqrt(D) / ((1 + pow(k_new, 2)));
 	float y_new1 = k_new * x_new1;
 	float y_new2 = k_new * x_new2;
-
-	if (POINT::distance(x, y, x_new1, y_new1) < POINT::distance(x, y, x_new2, y_new2))
+	POINT vr;
+	float dist1, dist2;
+	dist1 = POINT::distance(x, y, x_new1, y_new1);
+	dist2 = POINT::distance(x, y, x_new2, y_new2);
+	if (angle < 180)
 	{
-		this->x = x_new1;
-		if (is3d)
+		if(dist1<dist2)
+			vr.create(x_new1, this->y, y_new1);
+		else if (dist1 == dist2) 
 		{
-			this->z = y_new1;
+			if (x * y < 0)
+			{
+				
+
+			}
+			
+
 		}
 		else
-		{
-			this->y = y_new1;
-		}
-	}
-	else
-	{
-		this->x = x_new2;
-		if (is3d)
-		{
-			this->z = y_new2;
-		}
-		else
-		{
-			this->y = y_new2;
-		}
-	}
+			vr.create(x_new2, this->y, y_new2);
+	}*/
+	//if (dist1<dist2)
+	//{
+	//	//this->x = x_new1;
+	//	if (is3d)
+	//	{
+	//		vr.create(x_new1,this->y,y_new1);
+	//		//this->z = y_new1;
+	//	}
+	//	else
+	//	{
+	//		//this->y = y_new1;
+	//		vr.create(x_new1, y_new1, this->z);
+	//	}
+	//}
+	//else if (dist1 == dist2)
+	//{
+	//	
+	//}
+	//else
+	//{
+	//	//this->x = x_new2;
+	//	if (is3d)
+	//	{
+	//		//this->z = y_new2;
+	//		vr.create(x_new2, this->y, y_new2);
+	//	}
+	//	else
+	//	{
+	//		//this->y = y_new2;
+	//		vr.create(x_new2, y_new2,this->z);
+	//	}
+	//}
+	angle = to_rads(angle);
+	POINT vr;
+	std::vector<std::vector<double>> Zp;
+	std::vector<double> vec;
+	vec.push_back(cos(angle));
+	vec.push_back(0);
+	vec.push_back(sin(angle));
+	
+	Zp.push_back(vec);
+	vec.clear();
+	vec.push_back(0);
+	vec.push_back(1);
+	vec.push_back(0);
+	Zp.push_back(vec);
+	vec.clear();
+	vec.push_back(-sin(angle));
+	vec.push_back(0);
+	vec.push_back(cos(angle));
+	Zp.push_back(vec);
+	vec.clear();
+	vec.push_back(this->x);
+	vec.push_back(this->y);
+	vec.push_back(this->z);
+	vec = multiply(Zp, vec);
 
+	vr.create(vec[0], vec[1], vec[2]);
+
+	return vr;
 }
 
 std::vector<float> POINT::vector(POINT A)
@@ -281,7 +355,7 @@ void TRIANGLE::draw_3d(sf::RenderWindow& window, POINT light, bool normal_visibl
 	convex.setPoint(0, sf::Vector2f(this->v1.x * k1, -this->v1.y * k1));
 	convex.setPoint(1, sf::Vector2f(this->v2.x * k2, -this->v2.y * k2));
 	convex.setPoint(2, sf::Vector2f(this->v3.x * k3, -this->v3.y * k3));
-	this->normal();
+	this->normal(true);
 	if(islit)
 	{
 		//float a = (this->angle(this->v1.vector(light)) + this->angle(this->v2.vector(light)) + this->angle(this->v3.vector(light))) / 3;
@@ -403,44 +477,67 @@ void TRIANGLE::lightness(float l)
 	}
 	else
 	{
+		/*if (l == 0)
+			l = 0.001;*/
 		this->color.r *= (255 * l) / m;
 		this->color.g *= (255 * l) / m;
 		this->color.b *= (255 * l) / m;
 	}
 	
 }
-void TRIANGLE::rotate(float angle)
+TRIANGLE TRIANGLE::rotate(float angle)
 {
-	this->v1.rotate(angle, true);
+	TRIANGLE tris;
+	tris.create
+	(
+		this->v1.rotate(angle, true),
+		this->v2.rotate(angle, true),
+		this->v3.rotate(angle, true)
+	);
+	tris.normalv = this->normalv;
+	/*this->v1.rotate(angle, true);
 	this->v2.rotate(angle, true);
-	this->v3.rotate(angle, true);
-	this->centroid.initialized=false;
+	this->v3.rotate(angle, true);*/
+	//this->centroid.initialized=false;
+	this->r_angle = angle;
+	return tris;
 }
 
-std::vector<float> TRIANGLE::normal()
+std::vector<float> TRIANGLE::normal(bool update)
 {
 	float nx, ny, nz;
-	nx = (this->v2.y - this->v1.y) * (this->v3.z - this->v1.z) - (this->v2.z - this->v1.z) * (this->v3.y - this->v1.y);
-	ny = (this->v2.z - this->v1.z) * (this->v3.x - this->v1.x) - (this->v2.x - this->v1.x) * (this->v3.z - this->v1.z);
-	nz = (this->v2.x - this->v1.x) * (this->v3.y - this->v1.y) - (this->v2.y - this->v1.y) * (this->v3.x - this->v1.x);
-	float lenth = sqrt(pow(nx, 2) + pow(ny, 2) + pow(nz, 2));
-	nx *= 10/ lenth;
-	ny *= 10 / lenth;
-	nz *= 10 / lenth;
-	if (this->normalv.empty())
+	if (update)
 	{
-		this->normalv.push_back(nx);
-		this->normalv.push_back(ny);
-		this->normalv.push_back(nz);
-		/*std::cout << this->normalv[0]<<"\n";
-		std::cout << this->normalv[1] << "\n";
-		std::cout << this->normalv[2];*/
+		
+		nx = (this->v2.y - this->v1.y) * (this->v3.z - this->v1.z) - (this->v2.z - this->v1.z) * (this->v3.y - this->v1.y);
+		ny = (this->v2.z - this->v1.z) * (this->v3.x - this->v1.x) - (this->v2.x - this->v1.x) * (this->v3.z - this->v1.z);
+		nz = (this->v2.x - this->v1.x) * (this->v3.y - this->v1.y) - (this->v2.y - this->v1.y) * (this->v3.x - this->v1.x);
+		float lenth = sqrt(pow(nx, 2) + pow(ny, 2) + pow(nz, 2));
+		nx *= 10 / lenth;
+		ny *= 10 / lenth;
+		nz *= 10 / lenth;
+		if (this->normalv.empty())
+		{
+			this->normalv.push_back(nx);
+			this->normalv.push_back(ny);
+			this->normalv.push_back(nz);
+			/*std::cout << this->normalv[0]<<"\n";
+			std::cout << this->normalv[1] << "\n";
+			std::cout << this->normalv[2];*/
+		}
+		else
+		{
+			this->normalv[0] = nx;
+			this->normalv[1] = ny;
+			this->normalv[2] = nz;
+		}
 	}
 	else
 	{
-		this->normalv[0]=nx;
-		this->normalv[1]=ny;
-		this->normalv[2]=nz;
+		float lenth = sqrt(pow(this->normalv[0], 2) + pow(this->normalv[1], 2) + pow(this->normalv[2], 2));
+		this->normalv[0] *= 10 / lenth;
+		this->normalv[1] *= 10 / lenth;
+		this->normalv[2] *= 10 / lenth;
 	}
 	return this->normalv;
 }
@@ -454,6 +551,8 @@ void TRIANGLE::operator=(TRIANGLE tris)
 	this->v3 = tris.v3;
 	this->border_width = tris.border_width;
 	this->centroid = tris.centroid;
+	this->normalv = tris.normalv;
+	this->r_angle = tris.r_angle;
 }
 
 TRIANGLE TRIANGLE::operator*(float k)
@@ -571,31 +670,32 @@ void quickSort2(std::vector<TRIANGLE>& tris, std::vector<TRIANGLE>& border, int 
 	}
 }
 
-void OBJECT::draw(sf::RenderWindow& window, POINT light, bool normal_visible, bool islit)
+void OBJECT::draw(sf::RenderWindow& window, POINT light, float angle, bool normal_visible, bool islit)
 {
-	if (this->border.empty())
+	OBJECT obj;
+	obj = this->rotate(angle);
+	if (obj.border.empty())
 	{
-		if (!this->sorted)
+		if (!obj.sorted)
 		{
-			quickSort(this->mesh, 0, std::size(this->mesh) - 1);
-			this->sorted = true;
+			quickSort(obj.mesh, 0, std::size(obj.mesh) - 1);
+			obj.sorted = true;
 		}
 
-		for (int i = 0; i < std::size(this->mesh); i++)
+		for (int i = 0; i < std::size(obj.mesh); i++)
 		{
-			this->mesh[i].draw_3d(window,light, normal_visible,islit);
+			obj.mesh[i].draw_3d(window,light, normal_visible,islit);
 		}
 	}
 	else
 	{
-		quickSort2(this->mesh,this->border, 0, std::size(this->mesh) - 1);
-		for (int i = 0; i < std::size(this->mesh); i++)
+		quickSort2(obj.mesh,obj.border, 0, std::size(obj.mesh) - 1);
+		for (int i = 0; i < std::size(obj.mesh); i++)
 		{
-			this->mesh[i].draw_3d(window, light, normal_visible, islit);
-			this->border[i].draw_3d(window, light, normal_visible, islit);
+			obj.mesh[i].draw_3d(window, light, normal_visible, islit);
+			obj.border[i].draw_3d(window, light, normal_visible, islit);
 		}
 	}
-	
 }
 
 void OBJECT::renderInHalfs(sf::RenderWindow& window, POINT light)
@@ -635,21 +735,32 @@ void OBJECT::operator=(std::vector<TRIANGLE> mesh)
 	}*/
 }
 
-void OBJECT::rotate(float angle)
+void OBJECT::operator=(OBJECT obj)
 {
+	this->mesh = obj.mesh;
+	this->border = obj.border;
+	this->r_angle = obj.r_angle;
+	this->sorted = obj.sorted;
+}
+
+OBJECT OBJECT::rotate(float angle)
+{
+	OBJECT o;
+	std::vector<TRIANGLE> trises;
 	if (this->border.empty())
 	{
 		for (int i = 0; i < std::size(this->mesh); i++) {
-			this->mesh[i].rotate(angle);
+			trises.push_back(this->mesh[i].rotate(angle));
 		}
 	}
 	else
 	{
 		for (int i = 0; i < std::size(this->mesh); i++) {
-			this->mesh[i].rotate(angle);
-			this->border[i].rotate(angle);
+			trises.push_back(this->mesh[i].rotate(angle));
+			trises.push_back(this->border[i].rotate(angle));
 		}
 	}
-	this->sorted = false;
-	
+	o = trises;
+	//this->sorted = false;
+	return o;
 }

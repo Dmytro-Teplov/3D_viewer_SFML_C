@@ -23,7 +23,7 @@ int main()
     EDGE e;
     e.create(tris1.center_point(),tris1.normal());
     OBJECT cubee;
-    cubee = reading("xavier_v2.obj");
+    cubee = reading("jester.obj");
     //cubee.create_hard_mode(reading("CUBE3.obj"));
     cubee.scale(1.7);
     sf::ContextSettings settings;
@@ -34,7 +34,7 @@ int main()
     sf::View view(sf::Vector2f(0, 0), sf::Vector2f(size.x, size.y));
     float i = 1;
 
-    cubee.rotate(100);
+   // cubee.rotate(100);
     window.setView(view);
     while (window.isOpen())
     {
@@ -45,12 +45,13 @@ int main()
                 window.close();
         }
         window.clear();
-        
+        //std::cin >> i;
         /*p.draw(window);
         p.rotate(10,true);*/
-        cubee.draw(window,l,false,true);
-        cubee.rotate(1);
-        
+        cubee.draw(window,l,i,false,true);
+        //cubee.rotate(1);
+        i-=10;
+        //std::cout << i << "\n";
        // tris1.draw_3d(window,true);
         //sf::sleep(sf::milliseconds(20));
         
