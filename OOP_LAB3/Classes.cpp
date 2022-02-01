@@ -27,6 +27,7 @@ void POINT::middle(POINT a, POINT b)
 	this->x = (a.x + b.x) / 2;
 	this->y = (a.y + b.y) / 2;
 	this->z = (a.z + b.z) / 2;
+	this->initialized = true;
 }
 void POINT::create(float a, float b,float c)
 {
@@ -140,10 +141,7 @@ void POINT::rotate(float angle,bool is3d)
 	float x_new2 = -sqrt(D) / ((1 + pow(k_new, 2)));
 	float y_new1 = k_new * x_new1;
 	float y_new2 = k_new * x_new2;
-	/*std::cout << k<<" ";
-	std::cout << k_new<<" ";
-	std::cout << x_new1<<" ";
-	std::cout << y_new1<<"\n";*/
+
 	if (POINT::distance(x, y, x_new1, y_new1) < POINT::distance(x, y, x_new2, y_new2))
 	{
 		this->x = x_new1;
@@ -192,7 +190,6 @@ void EDGE::create(POINT a, POINT b)
 void EDGE::create(POINT a, std::vector<float> normalv)
 {
 	this->p1 = a;
-
 	POINT b;
 	b.create(normalv[0]+a.x, normalv[1] + a.y, normalv[2] + a.z);
 	this->p2 = b;
@@ -272,7 +269,7 @@ void TRIANGLE::draw(sf::RenderWindow& window) const
 	window.draw(convex);
 	
 }
-void TRIANGLE::draw_3d(sf::RenderWindow& window, POINT light, bool normal_visible)
+void TRIANGLE::draw_3d(sf::RenderWindow& window, POINT light, bool normal_visible, bool islit)
 {
 	sf::ConvexShape convex;
 	convex.setPointCount(3);
@@ -285,25 +282,20 @@ void TRIANGLE::draw_3d(sf::RenderWindow& window, POINT light, bool normal_visibl
 	convex.setPoint(1, sf::Vector2f(this->v2.x * k2, -this->v2.y * k2));
 	convex.setPoint(2, sf::Vector2f(this->v3.x * k3, -this->v3.y * k3));
 	this->normal();
-	float rad = this->angle(this->center_point().vector(light));
-	sf::Color col = this->color;
-	double pi = 3.14159265359;
-	this->lightness(rad/ pi);
+	if(islit)
+	{
+		//float a = (this->angle(this->v1.vector(light)) + this->angle(this->v2.vector(light)) + this->angle(this->v3.vector(light))) / 3;
+		float rad = this->angle(this->center_point().vector(light));
+		this->lightness(rad / 3.14159265359);
+	}
 	convex.setFillColor(this->color);
+	window.draw(convex);
 	if (normal_visible)
 	{
 		EDGE n;
 		n.create(this->center_point(), this->normal());
 		n.draw_3d(window);
 	}
-	window.draw(convex);
-	/*if(normal_visible)
-	{
-		EDGE n;
-		n.create(this->center_point(), this->normal());
-		n.draw_3d(window);
-	}*/
-	
 
 }
 void TRIANGLE::scale_this(float lambda)
@@ -356,7 +348,6 @@ float TRIANGLE::center()
 		POINT centre;
 		centre.create((this->v1.x + this->v2.x + this->v3.x) / 3.0, (this->v1.y + this->v2.y + this->v3.y) / 3.0, (this->v1.z + this->v2.z + this->v3.z) / 3.0);
 		this->centroid = centre;
-		//std::cout << this->centroid.z << "\n";
 	}
 	
 	return this->centroid.z;
@@ -369,7 +360,6 @@ POINT TRIANGLE::center_point()
 		POINT centre;
 		centre.create((this->v1.x + this->v2.x + this->v3.x) / 3.0, (this->v1.y + this->v2.y + this->v3.y) / 3.0, (this->v1.z + this->v2.z + this->v3.z) / 3.0);
 		this->centroid = centre;
-		//std::cout << this->centroid.z << "\n";
 	}
 	return this->centroid;
 }
@@ -434,17 +424,17 @@ std::vector<float> TRIANGLE::normal()
 	ny = (this->v2.z - this->v1.z) * (this->v3.x - this->v1.x) - (this->v2.x - this->v1.x) * (this->v3.z - this->v1.z);
 	nz = (this->v2.x - this->v1.x) * (this->v3.y - this->v1.y) - (this->v2.y - this->v1.y) * (this->v3.x - this->v1.x);
 	float lenth = sqrt(pow(nx, 2) + pow(ny, 2) + pow(nz, 2));
-	nx *= 100 / lenth;
-	ny *= 100 / lenth;
-	nz *= 100 / lenth;
+	nx *= 10/ lenth;
+	ny *= 10 / lenth;
+	nz *= 10 / lenth;
 	if (this->normalv.empty())
 	{
 		this->normalv.push_back(nx);
 		this->normalv.push_back(ny);
 		this->normalv.push_back(nz);
-		std::cout << this->normalv[0]<<"\n";
+		/*std::cout << this->normalv[0]<<"\n";
 		std::cout << this->normalv[1] << "\n";
-		std::cout << this->normalv[2];
+		std::cout << this->normalv[2];*/
 	}
 	else
 	{
@@ -479,7 +469,6 @@ float TRIANGLE::angle(std::vector<float> vec2)
 {
 	std::vector<float> vec1 = this->normalv;
 	float angle = std::acos((vec1[0] * vec2[0] + vec1[1] * vec2[1] + vec1[2] * vec2[2]) / (sqrt(pow(vec1[0], 2) + pow(vec1[1], 2) + pow(vec1[2], 2)) * sqrt(pow(vec2[0], 2) + pow(vec2[1], 2) + pow(vec2[2], 2))));
-	//this->normalv.clear();
 	return angle;
 }
 
@@ -582,9 +571,8 @@ void quickSort2(std::vector<TRIANGLE>& tris, std::vector<TRIANGLE>& border, int 
 	}
 }
 
-void OBJECT::draw(sf::RenderWindow& window, POINT light, bool normal_visible)
+void OBJECT::draw(sf::RenderWindow& window, POINT light, bool normal_visible, bool islit)
 {
-
 	if (this->border.empty())
 	{
 		if (!this->sorted)
@@ -595,19 +583,16 @@ void OBJECT::draw(sf::RenderWindow& window, POINT light, bool normal_visible)
 
 		for (int i = 0; i < std::size(this->mesh); i++)
 		{
-			this->mesh[i].draw_3d(window,light, normal_visible);
-			//std::cout << this->mesh[i].center()<<"\n";
-			//this->mesh[i].centroid.clear();
+			this->mesh[i].draw_3d(window,light, normal_visible,islit);
 		}
-		//std::cout << "\n--------";
 	}
 	else
 	{
 		quickSort2(this->mesh,this->border, 0, std::size(this->mesh) - 1);
 		for (int i = 0; i < std::size(this->mesh); i++)
 		{
-			this->mesh[i].draw_3d(window, light, normal_visible);
-			this->border[i].draw_3d(window, light);
+			this->mesh[i].draw_3d(window, light, normal_visible, islit);
+			this->border[i].draw_3d(window, light, normal_visible, islit);
 		}
 	}
 	
@@ -641,13 +626,13 @@ void OBJECT::operator=(std::vector<TRIANGLE> mesh)
 {
 
 	this->mesh = mesh;
-	for (int i = 0; i < std::size(this->mesh); i++)
+	/*for (int i = 0; i < std::size(this->mesh); i++)
 	{
 		if (i % 2)
 			this->mesh[i].paint("Green");
 		else
 			this->mesh[i].paint("Blue");
-	}
+	}*/
 }
 
 void OBJECT::rotate(float angle)

@@ -24,6 +24,76 @@ void show(std::vector<std::vector<int>> A)
 	}
 	std::cout << "\n";
 }
+POINT parse_point(std::string text,char divider)
+{
+	int vertex_count = 3;
+	std::vector<float> xyz;
+	std::string number="";
+	int i = 2;
+	for (int j = 0;std::size(xyz)< vertex_count; j++)
+	{
+		while (text[i] != divider && i < std::size(text))
+		{
+			number += std::string(1, text[i]);
+			i++;
+		}
+		if(number!="")
+			xyz.push_back(std::stof(number));
+		number.clear();
+		i++;
+	}
+	POINT p;
+	p.create(xyz[0],xyz[1],xyz[2]);
+	return p;
+}
+
+std::vector<std::vector<int>> parse_face(std::string text)
+{
+	int vertex_count = 3;
+	std::vector<std::vector<int>> face;
+	std::vector<int> vertex;
+	std::string number="";
+	int i = 2;
+	for (int j = 0; j < vertex_count; j++)
+	{
+		while (i < std::size(text))
+		{
+			
+			if (text[i] == ' ')
+			{
+				if (number != "")
+					vertex.push_back(std::stof(number));
+
+				else
+					vertex.push_back(0);
+				face.push_back(vertex);
+				vertex.clear();
+				number = "";
+				
+			}else if (text[i] == '/')
+			{
+				if (number != "")
+					vertex.push_back(std::stof(number));
+
+				else
+					vertex.push_back(0);
+				number = "";
+				i++;
+			}
+			else
+			{
+				number += std::string(1, text[i]);
+			}
+			
+			i++;
+		}
+		face.push_back(vertex);
+		vertex.clear();
+		i++;
+	}
+	return face;
+}
+
 std::vector<TRIANGLE> reading(std::string filename)
 {
 	std::vector<TRIANGLE> mesh;
@@ -40,89 +110,39 @@ std::vector<TRIANGLE> reading(std::string filename)
 	myfile.open(filename);
 	int k = 0;
 	int i = 2;
-	while (getline(myfile, text)) 
+	std::vector<POINT> v;
+	std::vector<POINT> vt;
+	std::vector<POINT> vn;
+	TRIANGLE tris;
+	std::vector<TRIANGLE> f;
+	while (getline(myfile, text))
 	{
-		if (text[0]=='v'&& text[1] == ' ')
+		if (text[0] == 'v' && text[1] == ' ')
 		{
-			while (text[i] != ' ')
-			{
-				number += std::string(1, text[i]);
-				if(i+1<std::size(text))
-					i++;
-			}
-			xyz.push_back(std::stof(number));
-			//std::cout << xyz.back()<<"\t";
-			i++;
-			number = "";
-			while (text[i] != ' ')
-			{
-				number += std::string(1, text[i]);
-				if (i + 1 < std::size(text))
-					i++;
-			}
-			xyz.push_back(std::stof(number));
-			//std::cout << xyz.back() << "\t";
-			i++;
-			number = "";
-			while ((text[i] != ' ')&& (i + 1 < std::size(text)))
-			{
-				number += std::string(1, text[i]);
-				if (i + 1 < std::size(text))
-					i++;
-			}
-			xyz.push_back(std::stof(number));
-			//std::cout << xyz.back() << "\n";
-			i = 2;
-			number = "";
-			coords.push_back(xyz);
-			xyz.clear();
-			
+			v.push_back(parse_point(text, ' '));
 		}
+		if (text[0] == 'v' && text[1] == 'n' && text[2] == ' ')
+		{
+			vn.push_back(parse_point(text, ' '));
+		}
+		if (text[0] == 'v' && text[1] == 't' && text[2] == ' ')
+		{
+			vt.push_back(parse_point(text, ' '));
+		}
+
 		i = 2;
-		
+
 		if (text[0] == 'f' && text[1] == ' ')
 		{
-			while (i < std::size(text))
-			{
-				if (text[i] == '/'&& text[i+1] == '/')
-				{
-					k = i-1;
-					while (text[k] != ' ')
-					{
-						number += std::string(1, text[k]);
-						k--;
-					}
-					std::reverse(number.begin(), number.end());
-					vert.push_back(std::stoi(number));
-					number = "";
-				}
-				i++;
-			}
-			vertices.push_back(vert);
-			vert.clear();
-			i = 2;
+
+			vertices = parse_face(text);
+			tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1]);
+			f.push_back(tris);
+			
 		}
-
+		
 	}
-
-	POINT p1;
-	std::vector<POINT> p;
-	TRIANGLE tris;
-	std::vector<TRIANGLE> t;
-
-	for (int j = 0; j < std::size(coords); j++)
-	{
-		p1.create(coords[j][0], coords[j][1], coords[j][2]);
-		p.push_back(p1);
-	}
-
-	for (int j = 0; j < std::size(vertices); j++)
-	{
-		tris.create(p[vertices[j][0] - 1], p[vertices[j][1] - 1], p[vertices[j][2] - 1]);
-		tris.border_width = 1;
-		t.push_back(tris);
-	}
-	mesh = t;
+	mesh = f;
 	myfile.close();
 	return mesh;
 }

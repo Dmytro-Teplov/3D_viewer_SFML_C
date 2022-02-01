@@ -6,7 +6,7 @@ int main()
     POINT origin;
     origin.create(0, 0, 0);
     POINT l;
-    l.create(300, 300, 0);
+    l.create(300, 100, 400);
 
     HEX violet,violet2;
     violet.create(167, 128,200);
@@ -23,14 +23,17 @@ int main()
     EDGE e;
     e.create(tris1.center_point(),tris1.normal());
     OBJECT cubee;
-    cubee = reading("jester.obj");
-    //cubee.create_hard_mode(reading("xanadu.obj"));
-    cubee.scale(2);
-    sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML works!");
+    cubee = reading("xavier_v2.obj");
+    //cubee.create_hard_mode(reading("CUBE3.obj"));
+    cubee.scale(1.7);
+    sf::ContextSettings settings;
+    settings.antialiasingLevel = 4;;
+    sf::RenderWindow window(sf::VideoMode(1280, 720), "3D Viewer", sf::Style::Default, settings);
 
     sf::Vector2u size = window.getSize();
     sf::View view(sf::Vector2f(0, 0), sf::Vector2f(size.x, size.y));
     float i = 1;
+
     cubee.rotate(100);
     window.setView(view);
     while (window.isOpen())
@@ -45,8 +48,8 @@ int main()
         
         /*p.draw(window);
         p.rotate(10,true);*/
-        cubee.draw(window,l);
-        cubee.rotate(5);
+        cubee.draw(window,l,false,true);
+        cubee.rotate(1);
         
        // tris1.draw_3d(window,true);
         //sf::sleep(sf::milliseconds(20));
@@ -59,7 +62,7 @@ int main()
         //e.draw_3d(window);
         //e.rotate(1);
         //cube.draw(window);
-        origin.draw(window);
+        //origin.draw(window);
         
         window.display();
     }

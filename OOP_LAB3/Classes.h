@@ -84,7 +84,7 @@ public:
 	void scale_this(float lambda);
 	void create(POINT v1, POINT v2, POINT v3);
 	void draw(sf::RenderWindow& window) const;
-	void draw_3d(sf::RenderWindow& window, POINT light, bool normal_visible = false) ;
+	void draw_3d(sf::RenderWindow& window, POINT light, bool normal_visible = false, bool islit=false) ;
 	void paint(std::string Col);
 	void paint(HEX color);
 	void lightness(float l);
@@ -108,7 +108,7 @@ public:
 	bool sorted = false;
 
 	void scale(float percent);
-	void draw(sf::RenderWindow& window, POINT light, bool normal_visible = false);
+	void draw(sf::RenderWindow& window, POINT light, bool normal_visible = false, bool islit = false);
 	void renderInHalfs(sf::RenderWindow& window, POINT light);
 	void create_hard_mode(std::vector<TRIANGLE> mesh);
 	void operator=(std::vector<TRIANGLE> mesh);
