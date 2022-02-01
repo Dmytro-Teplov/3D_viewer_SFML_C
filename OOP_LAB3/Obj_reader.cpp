@@ -54,12 +54,10 @@ std::vector<std::vector<int>> parse_face(std::string text)
 	std::vector<int> vertex;
 	std::string number="";
 	int i = 2;
-	for (int j = 0; j < vertex_count; j++)
-	{
-		while (i < std::size(text))
+	while (i <= std::size(text))
 		{
 			
-			if (text[i] == ' ')
+			if (text[i] == ' '|| i >= std::size(text))
 			{
 				if (number != "")
 					vertex.push_back(std::stof(number));
@@ -78,7 +76,8 @@ std::vector<std::vector<int>> parse_face(std::string text)
 				else
 					vertex.push_back(0);
 				number = "";
-				i++;
+				if(text[i-1] == '/')
+					i++;
 			}
 			else
 			{
@@ -86,11 +85,11 @@ std::vector<std::vector<int>> parse_face(std::string text)
 			}
 			
 			i++;
-		}
-		face.push_back(vertex);
-		vertex.clear();
-		i++;
 	}
+		//face.push_back(vertex);
+		//vertex.clear();
+	i++;
+	
 	return face;
 }
 
@@ -98,18 +97,9 @@ std::vector<TRIANGLE> reading(std::string filename)
 {
 	std::vector<TRIANGLE> mesh;
 	std::string text;
-	std::string number="";
 	std::ifstream myfile;
-	float x;
-	float y;
-	float z;
-	std::vector<std::vector<float>> coords;
 	std::vector<std::vector<int>> vertices;
-	std::vector<float> xyz;
-	std::vector<int> vert;
 	myfile.open(filename);
-	int k = 0;
-	int i = 2;
 	std::vector<POINT> v;
 	std::vector<POINT> vt;
 	std::vector<POINT> vn;
@@ -129,18 +119,12 @@ std::vector<TRIANGLE> reading(std::string filename)
 		{
 			vt.push_back(parse_point(text, ' '));
 		}
-
-		i = 2;
-
 		if (text[0] == 'f' && text[1] == ' ')
 		{
-
 			vertices = parse_face(text);
 			tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1]);
 			f.push_back(tris);
-			
 		}
-		
 	}
 	mesh = f;
 	myfile.close();
