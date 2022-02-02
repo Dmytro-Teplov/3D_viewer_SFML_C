@@ -136,91 +136,15 @@ bool POINT::compare_x(POINT p1,POINT p2)
 
 POINT POINT::rotate(float angle,bool is3d)
 {
-	/*float x = this->x;
-	float y;
 	this->r_angle = angle;
-	if (is3d) 
-	{
-		y = this->z;
-	}
-	else 
-	{
-		y = this->y;
-	}
 	angle = to_rads(angle);
-	float r2 = pow(x, 2) + pow(y, 2);
-	float k;
-	if (x != 0)
-		k = y / x;
-	else
-		k = y;
-	float k_new = tan(atan(k)+angle);
-	float D = (1 + pow(k_new, 2)) * r2;
-	float x_new1 = sqrt(D) / ((1 + pow(k_new, 2)));
-	float x_new2 = -sqrt(D) / ((1 + pow(k_new, 2)));
-	float y_new1 = k_new * x_new1;
-	float y_new2 = k_new * x_new2;
-	POINT vr;
-	float dist1, dist2;
-	dist1 = POINT::distance(x, y, x_new1, y_new1);
-	dist2 = POINT::distance(x, y, x_new2, y_new2);
-	if (angle < 180)
-	{
-		if(dist1<dist2)
-			vr.create(x_new1, this->y, y_new1);
-		else if (dist1 == dist2) 
-		{
-			if (x * y < 0)
-			{
-				
 
-			}
-			
-
-		}
-		else
-			vr.create(x_new2, this->y, y_new2);
-	}*/
-	//if (dist1<dist2)
-	//{
-	//	//this->x = x_new1;
-	//	if (is3d)
-	//	{
-	//		vr.create(x_new1,this->y,y_new1);
-	//		//this->z = y_new1;
-	//	}
-	//	else
-	//	{
-	//		//this->y = y_new1;
-	//		vr.create(x_new1, y_new1, this->z);
-	//	}
-	//}
-	//else if (dist1 == dist2)
-	//{
-	//	
-	//}
-	//else
-	//{
-	//	//this->x = x_new2;
-	//	if (is3d)
-	//	{
-	//		//this->z = y_new2;
-	//		vr.create(x_new2, this->y, y_new2);
-	//	}
-	//	else
-	//	{
-	//		//this->y = y_new2;
-	//		vr.create(x_new2, y_new2,this->z);
-	//	}
-	//}
-	angle = to_rads(angle);
 	POINT vr;
 	std::vector<std::vector<double>> Zp;
 	std::vector<double> vec;
 	vec.push_back(cos(angle));
 	vec.push_back(0);
 	vec.push_back(sin(angle));
-	
 	Zp.push_back(vec);
 	vec.clear();
 	vec.push_back(0);
@@ -237,9 +161,7 @@ POINT POINT::rotate(float angle,bool is3d)
 	vec.push_back(this->y);
 	vec.push_back(this->z);
 	vec = multiply(Zp, vec);
-
 	vr.create(vec[0], vec[1], vec[2]);
-
 	return vr;
 }
 
@@ -495,11 +417,8 @@ TRIANGLE TRIANGLE::rotate(float angle)
 		this->v3.rotate(angle, true)
 	);
 	tris.normalv = this->normalv;
-	/*this->v1.rotate(angle, true);
-	this->v2.rotate(angle, true);
-	this->v3.rotate(angle, true);*/
-	//this->centroid.initialized=false;
 	this->r_angle = angle;
+	tris.color = this->color;
 	return tris;
 }
 
@@ -670,10 +589,14 @@ void quickSort2(std::vector<TRIANGLE>& tris, std::vector<TRIANGLE>& border, int 
 	}
 }
 
-void OBJECT::draw(sf::RenderWindow& window, POINT light, float angle, bool normal_visible, bool islit)
+void OBJECT::draw(sf::RenderWindow& window, POINT light, bool islit, bool normal_visible, float angle)
 {
 	OBJECT obj;
-	obj = this->rotate(angle);
+	if (angle != 0)
+		obj = this->rotate(angle);
+	else
+		obj = this->rotate(this->r_angle);
+	
 	if (obj.border.empty())
 	{
 		if (!obj.sorted)
@@ -721,18 +644,19 @@ void OBJECT::create_hard_mode(std::vector<TRIANGLE> mesh)
 	}
 	this->border = border;
 }
-
+void OBJECT::paint(HEX color)
+{
+	for (int i = 0; i < std::size(this->mesh); i++)
+	{
+		this->mesh[i].paint(color);
+	}
+	this->color.r = color.red;
+	this->color.g = color.green;
+	this->color.b = color.blue;
+}
 void OBJECT::operator=(std::vector<TRIANGLE> mesh)
 {
-
 	this->mesh = mesh;
-	/*for (int i = 0; i < std::size(this->mesh); i++)
-	{
-		if (i % 2)
-			this->mesh[i].paint("Green");
-		else
-			this->mesh[i].paint("Blue");
-	}*/
 }
 
 void OBJECT::operator=(OBJECT obj)
@@ -741,11 +665,14 @@ void OBJECT::operator=(OBJECT obj)
 	this->border = obj.border;
 	this->r_angle = obj.r_angle;
 	this->sorted = obj.sorted;
+	this->color = obj.color;
+
 }
 
 OBJECT OBJECT::rotate(float angle)
 {
 	OBJECT o;
+	this->r_angle = angle;
 	std::vector<TRIANGLE> trises;
 	if (this->border.empty())
 	{
@@ -761,6 +688,5 @@ OBJECT OBJECT::rotate(float angle)
 		}
 	}
 	o = trises;
-	//this->sorted = false;
 	return o;
 }

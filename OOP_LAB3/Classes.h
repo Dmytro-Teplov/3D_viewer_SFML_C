@@ -107,13 +107,15 @@ public:
 	
 	std::vector<TRIANGLE> mesh;
 	std::vector<TRIANGLE> border;
+	sf::Color color = sf::Color(100, 100, 100);
 	float r_angle = 0;
 	bool sorted = false;
 
 	void scale(float percent);
-	void draw(sf::RenderWindow& window, POINT light, float angle ,bool normal_visible = false, bool islit = false);
+	void draw(sf::RenderWindow& window, POINT light , bool islit = false, bool normal_visible = false, float angle = 0);
 	void renderInHalfs(sf::RenderWindow& window, POINT light);
 	void create_hard_mode(std::vector<TRIANGLE> mesh);
+	void paint(HEX color);
 	void operator=(std::vector<TRIANGLE> mesh);
 	void operator=(OBJECT obj);
 	friend std::ostream& operator<<(std::ostream& os, OBJECT o);

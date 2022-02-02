@@ -11,6 +11,7 @@ int main()
     HEX violet,violet2;
     violet.create(167, 128,200);
     violet2.create(167, 80,255);
+
     POINT v1, v2, v3;
     v1.create(100,123,50);
     v2.create(50,-40,30);
@@ -24,17 +25,14 @@ int main()
     e.create(tris1.center_point(),tris1.normal());
     OBJECT cubee;
     cubee = reading("jester.obj");
-    //cubee.create_hard_mode(reading("CUBE3.obj"));
     cubee.scale(1.7);
+    cubee.paint(violet);
     sf::ContextSettings settings;
     settings.antialiasingLevel = 4;;
     sf::RenderWindow window(sf::VideoMode(1280, 720), "3D Viewer", sf::Style::Default, settings);
-
     sf::Vector2u size = window.getSize();
     sf::View view(sf::Vector2f(0, 0), sf::Vector2f(size.x, size.y));
     float i = 1;
-
-   // cubee.rotate(100);
     window.setView(view);
     while (window.isOpen())
     {
@@ -45,26 +43,11 @@ int main()
                 window.close();
         }
         window.clear();
-        //std::cin >> i;
-        /*p.draw(window);
-        p.rotate(10,true);*/
-        cubee.draw(window,l,i,false,true);
-        //cubee.rotate(1);
-        i-=10;
-        //std::cout << i << "\n";
-       // tris1.draw_3d(window,true);
-        //sf::sleep(sf::milliseconds(20));
         
-        //tris1.draw_3d(window,true);
-        //tris1.lightness(1);
-        //tris1.rotate(5);
+        cubee.draw(window,l,true,false,i);
         
-        //tris1.center_point().draw(window);
-        //e.draw_3d(window);
-        //e.rotate(1);
-        //cube.draw(window);
-        //origin.draw(window);
-        
+        i-=1;
+                
         window.display();
     }
     
