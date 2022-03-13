@@ -93,7 +93,7 @@ std::vector<std::vector<int>> parse_face(std::string text)
 	return face;
 }
 
-std::vector<TRIANGLE> reading(std::string filename)
+OBJECT reading(std::string filename)
 {
 	std::vector<TRIANGLE> mesh;
 	std::string text;
@@ -123,18 +123,22 @@ std::vector<TRIANGLE> reading(std::string filename)
 		if (text[0] == 'f' && text[1] == ' ')
 		{
 			vertices = parse_face(text);
-			tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1]);
-			if (vn.empty()) 
+			tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1], std::size(f));
+			
+			/*if (vn.empty()) 
 			{
 				tris.normalv.push_back((vn[vertices[0][2] - 1].x + vn[vertices[1][2] - 1].x + vn[vertices[2][2] - 1].x) / 3);
 				tris.normalv.push_back(-(vn[vertices[0][2] - 1].y + vn[vertices[1][2] - 1].y + vn[vertices[2][2] - 1].y) / 3);
 				tris.normalv.push_back((vn[vertices[0][2] - 1].z + vn[vertices[1][2] - 1].z + vn[vertices[2][2] - 1].z) / 3);
-			}
+			}*/
 			
 			f.push_back(tris);
 		}
 	}
-	mesh = f;
+	OBJECT obj;
+	obj.create(f,v);
+	//mesh = f;
 	myfile.close();
-	return mesh;
+
+	return obj;
 }

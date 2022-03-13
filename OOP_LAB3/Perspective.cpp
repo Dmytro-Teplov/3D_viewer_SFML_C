@@ -1,5 +1,6 @@
 #include <iostream>
 #include "obj_reader.h"
+#include <map>
 
 int main()
 {
@@ -22,10 +23,10 @@ int main()
    // tris1.paint(violet);
     tris2.scale(0.5);
     EDGE e;
-    e.create(tris1.center_point(),tris1.normal());
+    //e.create(tris1.center_point(),tris1.normal());
     OBJECT cubee;
     cubee = reading("jester.obj");
-    cubee.scale(1.7);
+    cubee.scale(1.5);
     cubee.paint(violet);
     sf::ContextSettings settings;
     settings.antialiasingLevel = 4;;
@@ -34,6 +35,7 @@ int main()
     sf::View view(sf::Vector2f(0, 0), sf::Vector2f(size.x, size.y));
     float i = 1;
     window.setView(view);
+    
     while (window.isOpen())
     {
         sf::Event event;
@@ -44,7 +46,7 @@ int main()
         }
         window.clear();
         
-        cubee.draw(window,l,true,false,i);
+        cubee.draw(window,l,true,false,i,false);
         
         i-=1;
                 

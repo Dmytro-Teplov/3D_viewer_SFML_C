@@ -3,6 +3,8 @@
 #include <vector>
 #include <deque>
 #include <algorithm>
+#include <map>
+#include <string_view>
 #include <math.h> 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -26,13 +28,21 @@ public:
 	float z = 0;
 	bool initialized = false;
 	float r_angle=0;
+	std::vector<int> adjacent_tris;
+	sf::Color color= sf::Color(127, 127, 127);
+	std::vector<float> normalv;
+	std::map<int,std::string> tripoints;
 
-	sf::Color color;
+
+
 	float distance(POINT a, POINT b);
 	float distance(float x1, float y1,float x2,float y2);
 	void middle(POINT a,POINT b);
 	void create(float a, float b, float c = 0);
 	void clear();
+
+	void lightness(float l);
+	float angle(std::vector<float> vec2);
 	
 	void draw(sf::RenderWindow& window) const;
 	bool operator>(POINT p);
@@ -47,6 +57,7 @@ public:
 	static bool compare_x(POINT p1,POINT p2);
 	POINT rotate(float angle,bool is3d=false);
 	std::vector<float> vector(POINT A);
+	void Gouraud(POINT& v1, std::vector<float>normalv , POINT light);
 };
 class EDGE
 {
@@ -64,6 +75,7 @@ public:
 	void rotate(float angle);
 	friend std::ostream& operator<<(std::ostream& os, EDGE& e);
 	void operator=(EDGE e);
+	EDGE operator*(float k);
 	
 };
 
@@ -85,13 +97,15 @@ public:
 	float center();
 	void scale_this(float lambda);
 	void create(POINT v1, POINT v2, POINT v3);
+	void create(POINT& v1, POINT& v2, POINT& v3, int tris_index);
 	void draw(sf::RenderWindow& window) const;
-	void draw_3d(sf::RenderWindow& window, POINT light, bool normal_visible = false, bool islit=false) ;
+	void draw_3d(sf::RenderWindow& window, POINT light, bool islit=false, bool gouraud = true);
 	void paint(std::string Col);
 	void paint(HEX color);
-	void lightness(float l);
+	
 	TRIANGLE rotate(float angle);
 	void operator=(TRIANGLE tris);
+	void lightness(float l);
 	float angle(std::vector<float> vec2);
 	POINT center_point();
 	TRIANGLE scale(float lambda);
@@ -103,18 +117,21 @@ public:
 class OBJECT
 {
 public:
-	
-	
 	std::vector<TRIANGLE> mesh;
+	std::vector<POINT> points;
+	std::vector<std::vector<float>> vertex_normals;
+	std::vector<EDGE> vertex_normals_vis;
 	std::vector<TRIANGLE> border;
 	sf::Color color = sf::Color(100, 100, 100);
 	float r_angle = 0;
 	bool sorted = false;
 
+
 	void scale(float percent);
-	void draw(sf::RenderWindow& window, POINT light , bool islit = false, bool normal_visible = false, float angle = 0);
+	void draw(sf::RenderWindow& window, POINT light, bool islit = false, bool normal_visible = false, float angle = 0,  bool gouraud = true);
 	void renderInHalfs(sf::RenderWindow& window, POINT light);
 	void create_hard_mode(std::vector<TRIANGLE> mesh);
+	void create(std::vector<TRIANGLE> mesh, std::vector<POINT> points);
 	void paint(HEX color);
 	void operator=(std::vector<TRIANGLE> mesh);
 	void operator=(OBJECT obj);
