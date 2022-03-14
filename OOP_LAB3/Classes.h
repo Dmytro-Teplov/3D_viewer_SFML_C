@@ -20,7 +20,7 @@ public:
 	int blue = 0;
 	void create(int red_num, int green_num, int blue_num);
 };
-class POINT
+class point
 {
 public:
 	float x = 0;
@@ -35,9 +35,9 @@ public:
 
 
 
-	float distance(POINT a, POINT b);
+	float distance(point a, point b);
 	float distance(float x1, float y1,float x2,float y2);
-	void middle(POINT a,POINT b);
+	void middle(point a,point b);
 	void create(float a, float b, float c = 0);
 	void clear();
 
@@ -45,29 +45,29 @@ public:
 	float angle(std::vector<float> vec2);
 	
 	void draw(sf::RenderWindow& window) const;
-	bool operator>(POINT p);
-	bool operator<(POINT p);
-	void operator=(POINT p);
-	//void operator=(const POINT p);
-	bool operator==(POINT p);
-	POINT operator*(float k);
-	POINT operator-(POINT b);
+	bool operator>(point p);
+	bool operator<(point p);
+	void operator=(point p);
+	//void operator=(const point p);
+	bool operator==(point p);
+	point operator*(float k);
+	point operator-(point b);
 	bool null();
-	friend std::ostream& operator<<(std::ostream& os, POINT p);
-	static bool compare_x(POINT p1,POINT p2);
-	POINT rotate(float angle,bool is3d=false);
-	std::vector<float> vector(POINT A);
-	void Gouraud(POINT& v1, std::vector<float>normalv , POINT light);
+	friend std::ostream& operator<<(std::ostream& os, point p);
+	static bool compare_x(point p1,point p2);
+	point rotate(float angle,bool is3d=false);
+	std::vector<float> vector(point A);
+	void Gouraud(point& v1, std::vector<float>normalv , point light);
 };
 class EDGE
 {
 public:
-	POINT p1, p2;
-	POINT s1, s2;
+	point p1, p2;
+	point s1, s2;
 	float thicc=4;
 
-	void create(POINT a, POINT b);
-	void create(POINT a, std::vector<float> normalv);
+	void create(point a, point b);
+	void create(point a, std::vector<float> normalv);
 	void create(float x1, float x2, float y1, float y2);
 	void clear();
 	void draw(sf::RenderWindow& window) ;
@@ -84,10 +84,10 @@ class TRIANGLE
 
 	
 public:
-	POINT v1;
-	POINT v2;
-	POINT v3;
-	POINT centroid;
+	point v1;
+	point v2;
+	point v3;
+	point centroid;
 	float r_angle=0;
 	std::vector<float> normalv;
 	sf::Color color = sf::Color(100, 100, 100);
@@ -96,10 +96,10 @@ public:
 
 	float center();
 	void scale_this(float lambda);
-	void create(POINT v1, POINT v2, POINT v3);
-	void create(POINT& v1, POINT& v2, POINT& v3, int tris_index);
+	void create(point v1, point v2, point v3);
+	void create(point& v1, point& v2, point& v3, int tris_index);
 	void draw(sf::RenderWindow& window) const;
-	void draw_3d(sf::RenderWindow& window, POINT light, bool islit=false, bool gouraud = true);
+	void draw_3d(sf::RenderWindow& window, point light, bool islit=false, bool gouraud = true);
 	void paint(std::string Col);
 	void paint(HEX color);
 	
@@ -107,7 +107,7 @@ public:
 	void operator=(TRIANGLE tris);
 	void lightness(float l);
 	float angle(std::vector<float> vec2);
-	POINT center_point();
+	point center_point();
 	TRIANGLE scale(float lambda);
 	TRIANGLE operator*(float k);
 	friend std::ostream& operator<<(std::ostream& os, TRIANGLE t);
@@ -118,7 +118,7 @@ class OBJECT
 {
 public:
 	std::vector<TRIANGLE> mesh;
-	std::vector<POINT> points;
+	std::vector<point> points;
 	std::vector<std::vector<float>> vertex_normals;
 	std::vector<EDGE> vertex_normals_vis;
 	std::vector<TRIANGLE> border;
@@ -128,10 +128,10 @@ public:
 
 
 	void scale(float percent);
-	void draw(sf::RenderWindow& window, POINT light, bool islit = false, bool normal_visible = false, float angle = 0,  bool gouraud = true);
-	void renderInHalfs(sf::RenderWindow& window, POINT light);
+	void draw(sf::RenderWindow& window, point light, bool islit = false, bool normal_visible = false, float angle = 0,  bool gouraud = true);
+	void renderInHalfs(sf::RenderWindow& window, point light);
 	void create_hard_mode(std::vector<TRIANGLE> mesh);
-	void create(std::vector<TRIANGLE> mesh, std::vector<POINT> points);
+	void create(std::vector<TRIANGLE> mesh, std::vector<point> points);
 	void paint(HEX color);
 	void operator=(std::vector<TRIANGLE> mesh);
 	void operator=(OBJECT obj);

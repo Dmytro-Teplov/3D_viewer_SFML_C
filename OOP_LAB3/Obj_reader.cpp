@@ -24,7 +24,7 @@ void show(std::vector<std::vector<int>> A)
 	}
 	std::cout << "\n";
 }
-POINT parse_point(std::string text,char divider)
+point parse_point(std::string text,char divider)
 {
 	int vertex_count = 3;
 	std::vector<float> xyz;
@@ -42,7 +42,7 @@ POINT parse_point(std::string text,char divider)
 		number.clear();
 		i++;
 	}
-	POINT p;
+	point p;
 	p.create(xyz[0],xyz[1],xyz[2]);
 	return p;
 }
@@ -101,9 +101,9 @@ OBJECT reading(std::string filename)
 	std::vector<std::vector<int>> vertices;
 	myfile.open(filename);
 	
-	std::vector<POINT> v;
-	std::vector<POINT> vt;
-	std::vector<POINT> vn;
+	std::vector<point> v;
+	std::vector<point> vt;
+	std::vector<point> vn;
 	TRIANGLE tris;
 	std::vector<TRIANGLE> f;
 	while (getline(myfile, text))
