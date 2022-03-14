@@ -2,6 +2,7 @@
 #include "obj_reader.h"
 #include <map>
 #include <Windows.h>
+#include <winuser.h>
 
 int main()
 {
@@ -38,7 +39,8 @@ int main()
 
 
 
-
+    sf::Mouse mice;
+    sf::Keyboard board;
 
 
     sf::Texture texture;
@@ -71,7 +73,7 @@ int main()
     EDGE e;
     //e.create(tris1.center_point(),tris1.normal());
     OBJECT cubee;
-    cubee = reading("CUBE2.obj");
+    cubee = reading("Chair.obj");
     cubee.scale(1.5);
     cubee.paint(violet);
     sf::ContextSettings settings;
@@ -91,7 +93,14 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+            if (mice.isButtonPressed(sf::Mouse::Left))
+            {
+                l.x = mice.getPosition(window).x - 640;
+                l.y = -(mice.getPosition(window).y - 360);
+            }
+            
         }
+        
         window.clear();
         
         window.draw(background);
@@ -103,15 +112,15 @@ int main()
         window.draw(islit_text);
         window.draw(gour_text);
         window.draw(gouraud);
-        if (GetKeyState('A') & 0x8000)
+        if (board.isKeyPressed(sf::Keyboard::A))
         {
             i -= 10;
         }
-        if (GetKeyState('D') & 0x8000)
+        if (board.isKeyPressed(sf::Keyboard::D))
         {
             i += 10;
         }
-        if (GetKeyState('G') & 0x8000)
+        if (board.isKeyPressed(sf::Keyboard::G))
         {
             gour = !gour;
             if (gour)
@@ -120,7 +129,7 @@ int main()
                 gouraud.setString("False");
             sf::sleep(sf::milliseconds(100));
         }
-        if (GetKeyState('L') & 0x8000)
+        if (board.isKeyPressed(sf::Keyboard::L))
         {
             lit = !lit;
             if(lit)
@@ -130,8 +139,8 @@ int main()
             sf::sleep(sf::milliseconds(100));
 
         }
-
-                
+        
+        
         window.display();
     }
     
