@@ -24,7 +24,7 @@ void show(std::vector<std::vector<int>> A)
 	}
 	std::cout << "\n";
 }
-point parse_point(std::string text,char divider)
+Point parse_point(std::string text,char divider)
 {
 	int vertex_count = 3;
 	std::vector<float> xyz;
@@ -42,11 +42,10 @@ point parse_point(std::string text,char divider)
 		number.clear();
 		i++;
 	}
-	point p;
+	Point p;
 	p.create(xyz[0],xyz[1],xyz[2]);
 	return p;
 }
-
 std::vector<std::vector<int>> parse_face(std::string text)
 {
 	int vertex_count = 3;
@@ -92,20 +91,19 @@ std::vector<std::vector<int>> parse_face(std::string text)
 	
 	return face;
 }
-
-OBJECT reading(std::string filename)
+Object reading(std::string filename)
 {
-	std::vector<TRIANGLE> mesh;
+	std::vector<Triangle> mesh;
 	std::string text;
 	std::ifstream myfile;
 	std::vector<std::vector<int>> vertices;
 	myfile.open(filename);
 	
-	std::vector<point> v;
-	std::vector<point> vt;
-	std::vector<point> vn;
-	TRIANGLE tris;
-	std::vector<TRIANGLE> f;
+	std::vector<Point> v;
+	std::vector<Point> vt;
+	std::vector<Point> vn;
+	Triangle tris;
+	std::vector<Triangle> f;
 	while (getline(myfile, text))
 	{
 		if (text[0] == 'v' && text[1] == ' ')
@@ -123,7 +121,7 @@ OBJECT reading(std::string filename)
 		if (text[0] == 'f' && text[1] == ' ')
 		{
 			vertices = parse_face(text);
-			tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1], std::size(f));
+			tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1]);
 			
 			/*if (vn.empty()) 
 			{
@@ -135,7 +133,7 @@ OBJECT reading(std::string filename)
 			f.push_back(tris);
 		}
 	}
-	OBJECT obj;
+	Object obj;
 	obj.create(f,v);
 	//mesh = f;
 	myfile.close();

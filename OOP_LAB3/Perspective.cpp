@@ -52,33 +52,30 @@ int main()
 
     background.setPosition(-640, -360);
 
-    point origin;
+    Point origin;
     origin.create(0, 0, 0);
-    point l;
+    Point l;
     l.create(300, 100, 400);
 
     HEX violet,violet2;
     violet.create(167, 128,200);
     violet2.create(167, 80,255);
 
-    point v1, v2, v3;
+    Point v1, v2, v3;
     v1.create(100,123,50);
     v2.create(50,-40,30);
     v3.create(-40,10,100);
-    TRIANGLE tris1,tris2;
+    Triangle tris1,tris2;
     tris1.create(v1,v2,v3);
     tris2 = tris1;
-   // tris1.paint(violet);
     tris2.scale(0.5);
-    EDGE e;
-    //e.create(tris1.center_point(),tris1.normal());
-    OBJECT cubee;
-    cubee = reading("Chair.obj");
-    cubee.scale(1.5);
+    Edge e;
+    Object cubee;
+    cubee = reading("CUBE2.obj");
+    //cubee.scale(1.5);
     cubee.paint(violet);
     sf::ContextSettings settings;
     settings.antialiasingLevel = 1;
-    //void sf::RenderTarget::clear(const Color & color = Color(0, 0, 0, 255));
     sf::RenderWindow window(sf::VideoMode(1280, 720), "3D Viewer", sf::Style::Default, settings);
     sf::Vector2u size = window.getSize();
     sf::View view(sf::Vector2f(0, 0), sf::Vector2f(size.x, size.y));
@@ -102,16 +99,15 @@ int main()
         }
         
         window.clear();
-        
         window.draw(background);
-
-        cubee.draw(window,l,lit,false,i,gour);
-
+       
+        cubee.draw(window,l, sf::Color(120, 255, 20),true,false,i,gour);
 
         window.draw(islit);
         window.draw(islit_text);
         window.draw(gour_text);
         window.draw(gouraud);
+
         if (board.isKeyPressed(sf::Keyboard::A))
         {
             i -= 10;
@@ -127,7 +123,7 @@ int main()
                 gouraud.setString("True");
             else
                 gouraud.setString("False");
-            sf::sleep(sf::milliseconds(100));
+            sf::sleep(sf::milliseconds(200));
         }
         if (board.isKeyPressed(sf::Keyboard::L))
         {
@@ -136,7 +132,7 @@ int main()
                 islit.setString("True");
             else
                 islit.setString("False");
-            sf::sleep(sf::milliseconds(100));
+            sf::sleep(sf::milliseconds(200));
 
         }
         

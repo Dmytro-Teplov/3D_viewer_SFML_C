@@ -38,38 +38,36 @@ void HEX::create(int red_num, int green_num, int blue_num)
 	this->blue = blue_num;
 }
 
-float point::distance(point a, point b)
+float Point::distance(Point a, Point b)
 {
 	return sqrt(pow((a.x-b.x),2)+ pow((a.y - b.y), 2)+ pow((a.z - b.z), 2));
 }
-
-float point::distance(float x1, float y1, float x2, float y2)
+float Point::distance(float x1, float y1, float x2, float y2)
 {
 	return sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
 }
-
-void point::middle(point a, point b)
+void Point::middle(Point a, Point b)
 {
 	this->x = (a.x + b.x) / 2;
 	this->y = (a.y + b.y) / 2;
 	this->z = (a.z + b.z) / 2;
 	this->initialized = true;
 }
-void point::create(float a, float b,float c)
+void Point::create(float a, float b,float c)
 {
 	this->x = a;
 	this->y = b;
 	this->z = c;
 	this->initialized = true;
 }
-void point::clear()
+void Point::clear()
 {
 	this->x = 0;
 	this->y = 0;
 	this->z = 0;
 	this->initialized = false;
 }
-void point::draw(sf::RenderWindow& window) const
+void Point::draw(sf::RenderWindow& window) const
 {
 	std::string s;//=  + std::to_string((int)this->y);
 	s.push_back('[');
@@ -96,16 +94,15 @@ void point::draw(sf::RenderWindow& window) const
 	window.draw(shape);
 	
 }
-
-bool point::operator>(point d)
+bool Point::operator>(Point d)
 {
 	return this->y > d.y;
 }
-bool point::operator<(point d)
+bool Point::operator<(Point d)
 {
 	return this->y < d.y;
 }
-void point::operator=(point d)
+void Point::operator=(Point d)
 {
 	this->x = d.x;
 	this->y = d.y;
@@ -116,14 +113,11 @@ void point::operator=(point d)
 	this->color = d.color;
 	this->tripoints = d.tripoints;
 }
-
-bool point::operator==(point p)
+bool Point::operator==(Point p)
 {
 	return this->x==p.x&& this->y == p.y;
 }
-
-
-point point::operator*(float k)
+Point Point::operator*(float k)
 {
 	
 	this->x = this->x* k;
@@ -131,13 +125,13 @@ point point::operator*(float k)
 	this->z = this->z* k;
 	return *this;
 }
-float point::angle(std::vector<float> vec2)
+float Point::angle(std::vector<float> vec2)
 {
 	std::vector<float> vec1 = this->normalv;
 	float angle = std::acos((vec1[0] * vec2[0] + vec1[1] * vec2[1] + vec1[2] * vec2[2]) / (sqrt(pow(vec1[0], 2) + pow(vec1[1], 2) + pow(vec1[2], 2)) * sqrt(pow(vec2[0], 2) + pow(vec2[1], 2) + pow(vec2[2], 2))));
 	return angle;
 }
-void point::lightness(float l)
+void Point::lightness(float l)
 {
 	l = abs(l);
 	float m = std::max(this->color.r, std::max(this->color.g, this->color.b));
@@ -156,29 +150,27 @@ void point::lightness(float l)
 		this->color.b *= (255 * l) / m;
 	}
 }
-
-point point::operator-(point b)
+Point Point::operator-(Point b)
 {
-	point a;
+	Point a;
 	a.create(this->x-b.x,this->y-b.y,this->z-b.z);
 	a.initialized = this->initialized;
 	return a;
 }
-bool point::null()
+bool Point::null()
 {
 	return this->x == 0&& this->y == 0;
 }
-bool point::compare_x(point p1,point p2)
+bool Point::compare_x(Point p1,Point p2)
 {
 	return p1.x<p2.x;
 }
-
-point point::rotate(float angles,bool is3d)
+Point Point::rotate(float angles,bool is3d)
 {
 	this->r_angle = angles;
 	float angle = to_rads(angles);
 
-	point vr;
+	Point vr;
 	std::vector<std::vector<double>> Zp;
 	std::vector<double> vec;
 	vec.push_back(cos(angle));
@@ -207,7 +199,7 @@ point point::rotate(float angles,bool is3d)
 	vr.tripoints = this->tripoints;
 	//Rotating normal
 	/*if (!this->normalv.empty()) {
-		point nr;
+		Point nr;
 		nr.create(this->normalv[0], this->normalv[1], this->normalv[2]);
 		nr.rotate(angles);
 		vr.normalv.push_back(nr.x);
@@ -216,11 +208,10 @@ point point::rotate(float angles,bool is3d)
 	}*/
 	return vr;
 }
-
-std::vector<float> point::vector(point A)
+std::vector<float> Point::vector(Point A)
 {
 
-	point v;
+	Point v;
 	v = *this - A;
 	std::vector<float> vec;
 	vec.push_back(v.x);
@@ -228,8 +219,7 @@ std::vector<float> point::vector(point A)
 	vec.push_back(v.z);
 	return vec;
 }
-
-void point::Gouraud(point& v1, std::vector<float> normalv, point light)
+void Point::Gouraud(Point& v1, std::vector<float> normalv, Point light)
 {
 	this->normalv = normalv;
 	float rad = this->angle(v1.vector(light));
@@ -242,32 +232,37 @@ void point::Gouraud(point& v1, std::vector<float> normalv, point light)
 
 
 
-void EDGE::create(point a, point b)
+void Edge::create(Point a, Point b)
 {
 	this->p1=a;
 	this->p2=b;
 }
-void EDGE::create(point a, std::vector<float> normalv)
+void Edge::create(Point* a, Point* b)
+{
+	this->p1 = *a;
+	this->p2 = *b;
+}
+void Edge::create(Point a, std::vector<float> normalv)
 {
 	this->p1 = a;
-	point b;
+	Point b;
 	b.create(normalv[0]+a.x, normalv[1] + a.y, normalv[2] + a.z);
 	this->p2 = b;
 }
-void EDGE::create(float x1, float y1, float x2, float y2)
+void Edge::create(float x1, float y1, float x2, float y2)
 {
-	point a;
+	Point a;
 	a.create(x1,y1);
 	this->p1 = a;
 	a.create(x2, y2);
 	this->p2 = a;
 }
-void EDGE::clear()
+void Edge::clear()
 {
 	this->p1.clear();
 	this->p2.clear();
 }
-void EDGE::draw(sf::RenderWindow& window) 
+void Edge::draw(sf::RenderWindow& window) 
 {
 	//float margin = 5;
 	//sf::VertexArray quad(sf::Quads, 4);
@@ -286,7 +281,7 @@ void EDGE::draw(sf::RenderWindow& window)
 	this->p1.draw(window);
 
 }
-void EDGE::draw_3d(sf::RenderWindow& window) const
+void Edge::draw_3d(sf::RenderWindow& window) const
 {
 	float Lens = 1000;
 	float k1, k2;
@@ -301,21 +296,20 @@ void EDGE::draw_3d(sf::RenderWindow& window) const
 	};
 	window.draw(line, 2, sf::Lines);
 }
-void EDGE::rotate(float angle)
+void Edge::rotate(float angle)
 {
 	this->p1=this->p1.rotate(angle, true);
 	this->p2=this->p2.rotate(angle, true);
 
 }
-void EDGE::operator=(EDGE e)
+void Edge::operator=(Edge e)
 {
 	this->p1 = e.p1;
 	this->p2 = e.p2; 
 	this->s1 = e.s1;
 	this->s2 = e.s2;
 }
-
-EDGE EDGE::operator*(float k)
+Edge Edge::operator*(float k)
 {
 	this->p1 = this->p1 * k;
 	this->p2 = this->p2 * k;
@@ -323,7 +317,7 @@ EDGE EDGE::operator*(float k)
 }
 
 
-void TRIANGLE::draw(sf::RenderWindow& window) const
+void Triangle::draw(sf::RenderWindow& window) const
 {
 	sf::ConvexShape convex;
 	convex.setPointCount(3);
@@ -336,7 +330,7 @@ void TRIANGLE::draw(sf::RenderWindow& window) const
 	window.draw(convex);
 	
 }
-void TRIANGLE::draw_3d(sf::RenderWindow& window, point light, bool islit, bool gouraud)
+void Triangle::draw_3d(sf::RenderWindow& window, Point light,bool islit,bool gouraud, bool border)
 {
 	float Lens = 1000;
 	float k1, k2, k3;
@@ -358,38 +352,37 @@ void TRIANGLE::draw_3d(sf::RenderWindow& window, point light, bool islit, bool g
 		}
 		convex.setFillColor(this->color);
 		window.draw(convex);
-
-		/*if (normal_visible)
+		/*if (border)
 		{
-			EDGE n;
-			n.create(this->center_point(), this->normal());
-			n.draw_3d(window);
-
+			for (int i = 0; i < 3; i++)
+			{
+				this->borders[i].draw_3d(window);
+			}
 		}*/
 	}
 	else
 	{
-		sf::VertexArray triangle(sf::Triangles, 3);
+		sf::VertexArray Triangle(sf::Triangles, 3);
 
-		// define the position of the triangle's points
-		triangle[0].position = sf::Vector2f(this->v1.x * k1, -this->v1.y * k1);
-		triangle[1].position = sf::Vector2f(this->v2.x * k2, -this->v2.y * k2);
-		triangle[2].position = sf::Vector2f(this->v3.x * k3, -this->v3.y * k3);
+		// define the position of the Triangle's points
+		Triangle[0].position = sf::Vector2f(this->v1.x * k1, -this->v1.y * k1);
+		Triangle[1].position = sf::Vector2f(this->v2.x * k2, -this->v2.y * k2);
+		Triangle[2].position = sf::Vector2f(this->v3.x * k3, -this->v3.y * k3);
 
-		// define the color of the triangle's points
-		triangle[0].color = this->v1.color;
-		triangle[1].color = this->v2.color;
-		triangle[2].color = this->v3.color;
-		window.draw(triangle);
+		// define the color of the Triangle's points
+		Triangle[0].color = this->v1.color;
+		Triangle[1].color = this->v2.color;
+		Triangle[2].color = this->v3.color;
+		window.draw(Triangle);
 	}
 	
 	
 	
 
 }
-void TRIANGLE::scale_this(float lambda)
+void Triangle::scale_this(float lambda)
 {
-	point cen;
+	Point cen;
 	cen = this->center_point();
 
 	this->v1.x = (this->v1.x + lambda * cen.x) / (1 + lambda);
@@ -404,10 +397,10 @@ void TRIANGLE::scale_this(float lambda)
 	this->v3.y = (this->v3.y + lambda * cen.y) / (1 + lambda);
 	this->v3.z = (this->v3.z + lambda * cen.z) / (1 + lambda);
 }
-TRIANGLE TRIANGLE::scale(float lambda)
+Triangle Triangle::scale(float lambda)
 {
-	TRIANGLE tris = *this;
-	point cen;
+	Triangle tris = *this;
+	Point cen;
 	cen = this->center_point();
 
 	tris.v1.x = (this->v1.x + lambda * cen.x) / (1 + lambda);
@@ -423,13 +416,13 @@ TRIANGLE TRIANGLE::scale(float lambda)
 	tris.v3.z = (this->v3.z + lambda * cen.z) / (1 + lambda);
 	return tris;
 }
-void TRIANGLE::create(point v1, point v2, point v3)
+void Triangle::create(Point v1, Point v2, Point v3)
 {
 	this->v1 = v1;
 	this->v2 = v2;
 	this->v3 = v3;
 }
-void TRIANGLE::create(point& v1, point& v2, point& v3, int tris_index)
+void Triangle::create(Point& v1, Point& v2, Point& v3, int tris_index)
 {
 	v1.adjacent_tris.push_back(tris_index);
 	v2.adjacent_tris.push_back(tris_index);
@@ -440,31 +433,38 @@ void TRIANGLE::create(point& v1, point& v2, point& v3, int tris_index)
 	v1.tripoints[tris_index] = "v1";
 	v2.tripoints[tris_index] = "v2";
 	v3.tripoints[tris_index] = "v3";
-	//std::cout << v3.tripoints[tris_index];
+	Edge e1,e2,e3;
+	e1.create(v1, v2);
+	this->borders.push_back(&e1);
+	e2.create(v1, v3);
+	this->borders.push_back(&e2);
+	e3.create(v2, v3);
+	this->borders.push_back(&e3);
+	std::cout << "ty";
+	
 }
-float TRIANGLE::center()
+float Triangle::center()
 {
 	if (!this->centroid.initialized) 
 	{
-		point centre;
+		Point centre;
 		centre.create((this->v1.x + this->v2.x + this->v3.x) / 3.0, (this->v1.y + this->v2.y + this->v3.y) / 3.0, (this->v1.z + this->v2.z + this->v3.z) / 3.0);
 		this->centroid = centre;
 	}
 	
 	return this->centroid.z;
 }
-
-point TRIANGLE::center_point()
+Point Triangle::center_point()
 {
 	if (!this->centroid.initialized)
 	{
-		point centre;
+		Point centre;
 		centre.create((this->v1.x + this->v2.x + this->v3.x) / 3.0, (this->v1.y + this->v2.y + this->v3.y) / 3.0, (this->v1.z + this->v2.z + this->v3.z) / 3.0);
 		this->centroid = centre;
 	}
 	return this->centroid;
 }
-void TRIANGLE::paint(std::string Col)
+void Triangle::paint(std::string Col)
 {
 	if (Col == "Red") 
 	{
@@ -491,14 +491,14 @@ void TRIANGLE::paint(std::string Col)
 	}
 
 }
-void TRIANGLE::paint(HEX color)
+void Triangle::paint(HEX color)
 {
 	this->color = sf::Color(color.red, color.green, color.blue);
 	this->v1.color = sf::Color(color.red, color.green, color.blue);
 	this->v2.color = sf::Color(color.red, color.green, color.blue);
 	this->v3.color = sf::Color(color.red, color.green, color.blue);
 }
-void TRIANGLE::lightness(float l)
+void Triangle::lightness(float l)
 {
 	l = abs(l);
 	float m=std::max(this->color.r, std::max(this->color.g, this->color.b));
@@ -518,9 +518,9 @@ void TRIANGLE::lightness(float l)
 	}
 	
 }
-TRIANGLE TRIANGLE::rotate(float angle)
+Triangle Triangle::rotate(float angle)
 {
-	TRIANGLE tris;
+	Triangle tris;
 	tris.create
 	(
 		this->v1.rotate(angle, true),
@@ -530,10 +530,10 @@ TRIANGLE TRIANGLE::rotate(float angle)
 	tris.normalv = this->normalv;
 	this->r_angle = angle;
 	tris.color = this->color;
+
 	return tris;
 }
-
-std::vector<float> TRIANGLE::normal(bool update)
+std::vector<float> Triangle::normal(bool update)
 {
 	float nx, ny, nz;
 	if (update)
@@ -571,8 +571,7 @@ std::vector<float> TRIANGLE::normal(bool update)
 	}
 	return this->normalv;
 }
-
-void TRIANGLE::operator=(TRIANGLE tris)
+void Triangle::operator=(Triangle tris)
 {
 	this->border_color = tris.border_color;
 	this->color = tris.color;
@@ -584,8 +583,7 @@ void TRIANGLE::operator=(TRIANGLE tris)
 	this->normalv = tris.normalv;
 	this->r_angle = tris.r_angle;
 }
-
-TRIANGLE TRIANGLE::operator*(float k)
+Triangle Triangle::operator*(float k)
 {
 	this->v1 = this->v1 * k;
 	this->v2 = this->v2 * k;
@@ -593,32 +591,31 @@ TRIANGLE TRIANGLE::operator*(float k)
 	return *this;
 }
 
-
-float TRIANGLE::angle(std::vector<float> vec2)
+float Triangle::angle(std::vector<float> vec2)
 {
 	std::vector<float> vec1 = this->normalv;
 	float angle = std::acos((vec1[0] * vec2[0] + vec1[1] * vec2[1] + vec1[2] * vec2[2]) / (sqrt(pow(vec1[0], 2) + pow(vec1[1], 2) + pow(vec1[2], 2)) * sqrt(pow(vec2[0], 2) + pow(vec2[1], 2) + pow(vec2[2], 2))));
 	return angle;
 }
 
-std::ostream& operator<<(std::ostream& os, point p)
+std::ostream& operator<<(std::ostream& os, Point p)
 {
 	os << "(" << p.x << "," << p.y<<","<<p.z << ")";
 	return os;
 }
-std::ostream& operator<<(std::ostream& os, EDGE& e)
+std::ostream& operator<<(std::ostream& os, Edge& e)
 {
 	os << "[" << e.p1 << "," << e.p2 << "]\n";
 	return os;
 }
-std::ostream& operator<<(std::ostream& os, TRIANGLE t)
+std::ostream& operator<<(std::ostream& os, Triangle t)
 {
 	os << "(" << t.v1.x << "," << t.v1.y << "," << t.v1.z << ")\n";
 	os << "(" << t.v2.x << "," << t.v2.y << "," << t.v2.z << ")\n";
 	os << "(" << t.v3.x << "," << t.v3.y << "," << t.v3.z << ")\n";
 	return os;
 }
-std::ostream& operator<<(std::ostream& os, OBJECT o)
+std::ostream& operator<<(std::ostream& os, Object o)
 {
 	for (int i = 0; i < std::size(o.mesh); i++)
 	{
@@ -628,17 +625,12 @@ std::ostream& operator<<(std::ostream& os, OBJECT o)
 	return os;
 }
 
-void OBJECT::scale(float koefficient)
+void Object::scale(float koefficient)
 {
 	
 	for (int i = 0; i < std::size(this->mesh); i++)
 	{
 		this->mesh[i] = this->mesh[i] * koefficient;
-		
-		if (!this->border.empty())
-		{
-			this->border[i] = this->border[i] * koefficient;
-		}
 	}
 	for (int i = 0; i < std::size(this->vertex_normals); i++)
 	{
@@ -649,14 +641,14 @@ void OBJECT::scale(float koefficient)
 		this->points[i] = this->points[i] * koefficient;
 	}
 }
-void swap(std::vector<TRIANGLE>& tris, int pos1, int pos2)
+void swap(std::vector<Triangle> tris, int pos1, int pos2)
 {
-	TRIANGLE t1;
+	Triangle t1;
 	t1=tris[pos1];
 	tris[pos1] = tris[pos2];
 	tris[pos2] = t1;
 }
-int partition(std::vector<TRIANGLE>& tris, int low, int high)
+int partition(std::vector<Triangle> tris, int low, int high)
 {
 	float pivot = tris[high].center();
 	int i = (low - 1);
@@ -671,7 +663,7 @@ int partition(std::vector<TRIANGLE>& tris, int low, int high)
 	swap(tris, i+1,high);
 	return (i + 1);
 }
-void quickSort(std::vector<TRIANGLE>& tris, int low, int high)
+void quickSort(std::vector<Triangle> tris, int low, int high)
 {
 	if (low < high)
 	{
@@ -681,104 +673,73 @@ void quickSort(std::vector<TRIANGLE>& tris, int low, int high)
 	}
 }
 
-int partition2(std::vector<TRIANGLE>& tris, std::vector<TRIANGLE>& border, int low, int high)
-{
-	float pivot = tris[high].center();
-
-	int i = (low - 1);
-	for (int j = low; j <= high - 1; j++)
-	{
-		if (tris[j].center() < pivot)
-		{
-			i++;
-			swap(tris, i, j);
-			swap(border, i, j);
-		}
-	}
-	swap(tris, i + 1, high);
-	swap(border, i + 1, high);
-	return (i + 1);
-}
-void quickSort2(std::vector<TRIANGLE>& tris, std::vector<TRIANGLE>& border, int low, int high)
-{
-	if (low < high)
-	{
-		int pi = partition2(tris,border, low, high);
-		quickSort2(tris, border, low, pi - 1);
-		quickSort2(tris, border, pi + 1, high);
-	}
-}
-
-void OBJECT::draw(sf::RenderWindow& window, point light, bool islit, bool normal_visible, float angle, bool gouraud)
+void Object::draw(sf::RenderWindow& window, Point light, sf::Color, bool islit, bool normal_visible, float angle, bool gouraud)
 {
 	
-	OBJECT obj;
-	obj = this->rotate(angle);
-	if (obj.border.empty())
+	Object obj;
+	if (this->r_angle != angle) 
 	{
-
-		//PAINT
-		if (gouraud&&islit) 
-		{
-			for (int i = 0; i < std::size(obj.points); i++)
-			{
-				for (int j = 0; j < std::size(obj.points[i].adjacent_tris); j++)
-				{
-
-					std::string vertex = obj.points[i].tripoints
-						[
-							obj.points[i].adjacent_tris[j]
-						];
-					if (vertex == "v1")
-					{
-						obj.points[i].Gouraud(obj.mesh[obj.points[i].adjacent_tris[j]].v1, obj.vertex_normals[i], light);
-					}
-					if (vertex == "v2")
-					{
-						obj.points[i].Gouraud(obj.mesh[obj.points[i].adjacent_tris[j]].v2, obj.vertex_normals[i], light);
-					}
-					if (vertex == "v3")
-					{
-						obj.points[i].Gouraud(obj.mesh[obj.points[i].adjacent_tris[j]].v3, obj.vertex_normals[i], light);
-					}
-				}
-			}
-		}
-
-
-		if (!obj.sorted)
-		{
-			quickSort(obj.mesh, 0, std::size(obj.mesh) - 1);
-			obj.sorted = true;
-		}
-		for (int i = 0; i < std::size(obj.mesh); i++)
-		{
-			obj.mesh[i].draw_3d(window, light, islit, gouraud);
-		}
-		if (normal_visible)
-		{
-			for (int i = 0; i < std::size(obj.vertex_normals); i++)
-			{
-
-				EDGE n;
-				n.create(obj.points[i], obj.vertex_normals[i]);
-				n.draw_3d(window);
-			}
-		}
-		
+		obj=this->rotate(angle);
+		this->r_angle = angle;
+		this->mesh_rotated = obj.mesh;
+		//std::cout << "d";
 	}
 	else
 	{
-		quickSort2(obj.mesh,obj.border, 0, std::size(obj.mesh) - 1);
-		for (int i = 0; i < std::size(obj.mesh); i++)
+		obj = *this;
+		obj.mesh = this->mesh_rotated;
+	}
+	
+
+	//PAINT
+
+	if (gouraud && islit)
+	{
+		for (int i = 0; i < std::size(obj.points); i++)
 		{
-			obj.mesh[i].draw_3d(window, light, normal_visible, islit);
-			obj.border[i].draw_3d(window, light, normal_visible, islit);
+			for (int j = 0; j < std::size(obj.points[i].adjacent_tris); j++)
+			{
+
+				std::string vertex = obj.points[i].tripoints
+					[
+						obj.points[i].adjacent_tris[j]
+					];
+				if (vertex == "v1")
+				{
+					obj.points[i].Gouraud(obj.mesh[obj.points[i].adjacent_tris[j]].v1, obj.vertex_normals[i], light);
+				}
+				if (vertex == "v2")
+				{
+					obj.points[i].Gouraud(obj.mesh[obj.points[i].adjacent_tris[j]].v2, obj.vertex_normals[i], light);
+				}
+				if (vertex == "v3")
+				{
+					obj.points[i].Gouraud(obj.mesh[obj.points[i].adjacent_tris[j]].v3, obj.vertex_normals[i], light);
+				}
+			}
 		}
 	}
+	if (!obj.sorted)
+	{
+		quickSort(obj.mesh, 0, std::size(obj.mesh) - 1);
+		obj.sorted = true;
+	}
+	for (int i = 0; i < std::size(obj.mesh); i++)
+	{
+		obj.mesh[i].draw_3d(window, light, islit, gouraud,false);
+	}
+	if (normal_visible)
+	{
+		for (int i = 0; i < std::size(obj.vertex_normals); i++)
+		{
+			Edge n;
+			n.create(obj.points[i], obj.vertex_normals[i]);
+			n.draw_3d(window);
+		}
+	}
+	
 }
-
-void OBJECT::renderInHalfs(sf::RenderWindow& window, point light)
+void Object::renderInHalfs(sf::RenderWindow& window, Point light)
 {
 	quickSort(this->mesh, 2*(std::size(this->mesh)/3), std::size(this->mesh) - 1);
 	for (int i = 2 * (std::size(this->mesh) / 3); i < std::size(this->mesh); i++)
@@ -786,10 +747,9 @@ void OBJECT::renderInHalfs(sf::RenderWindow& window, point light)
 		this->mesh[i].draw_3d(window, light);
 	}
 }
-
-void OBJECT::create_hard_mode(std::vector<TRIANGLE> mesh)
+void Object::create_hard_mode(std::vector<Triangle> mesh)
 {
-	std::vector<TRIANGLE> border;
+	std::vector<Triangle> border;
 	this->mesh = mesh;
 	for (int i = 0; i < std::size(mesh); i++)
 	{
@@ -801,7 +761,7 @@ void OBJECT::create_hard_mode(std::vector<TRIANGLE> mesh)
 	}
 	this->border = border;
 }
-void OBJECT::paint(HEX color)
+void Object::paint(HEX color)
 {
 	for (int i = 0; i < std::size(this->mesh); i++)
 	{
@@ -812,16 +772,17 @@ void OBJECT::paint(HEX color)
 	this->color.b = color.blue;
 	this->mesh[100].paint("Red");
 }
-void OBJECT::create(std::vector<TRIANGLE> mesh, std::vector<point> point)
+void Object::create(std::vector<Triangle> mesh, std::vector<Point> Point)
 {
 	this->mesh = mesh;
-	this->points = point;
-
+	this->points = Point;
+	
+	this->calculate_center();
 
 	std::vector<float> vertex_normal = { 0,0,0 };
 	std::vector<float> tris_normal = { 0,0,0 };
 	float lenth;
-	EDGE e;
+	Edge e;
 	for (int i = 0; i < std::size(this->points); i++)
 	{
 		for (int j = 0; j < std::size(points[i].adjacent_tris); j++)
@@ -841,14 +802,13 @@ void OBJECT::create(std::vector<TRIANGLE> mesh, std::vector<point> point)
 		e.clear();
 		vertex_normal = { 0,0,0 };
 	}
-
 }
-void OBJECT::operator=(std::vector<TRIANGLE> mesh)
+void Object::operator=(std::vector<Triangle> mesh)
 {
 	this->mesh = mesh;
-}
 
-void OBJECT::operator=(OBJECT obj)
+}
+void Object::operator=(Object obj)
 {
 	this->mesh = obj.mesh;
 	this->points = obj.points;
@@ -861,54 +821,46 @@ void OBJECT::operator=(OBJECT obj)
 	this->color = obj.color;
 
 }
-
-OBJECT OBJECT::rotate(float angle)
+Object Object::rotate(float angle)
 {
-	/*OBJECT o;
-	this->r_angle = angle;
-	std::vector<TRIANGLE> trises;
-	if (this->border.empty())
-	{
-		for (int i = 0; i < std::size(this->mesh); i++) {
-			trises.push_back(this->mesh[i].rotate(angle));
-		}
-	}
-	else
-	{
-		for (int i = 0; i < std::size(this->mesh); i++) {
-			trises.push_back(this->mesh[i].rotate(angle));
-			trises.push_back(this->border[i].rotate(angle));
-		}
-	}
-	o = trises;*/
-	OBJECT obj;
-	point p;
+	Object obj;
+	Point p;
 
 	obj = *this;
-	if (obj.border.empty())
+	for (int i = 0; i < std::size(obj.mesh); i++)
 	{
-		for (int i = 0; i < std::size(obj.mesh); i++) 
-		{
-			obj.mesh[i] = obj.mesh[i].rotate(angle);
-			
-		}
-		for (int i = 0; i < std::size(obj.points); i++)
-		{
-			obj.points[i] = obj.points[i].rotate(angle);
-			obj.vertex_normals_vis[i].rotate(angle);
-			p.create(obj.vertex_normals[i][0], obj.vertex_normals[i][1], obj.vertex_normals[i][2]);
-			p = p.rotate(angle, true);
-			obj.vertex_normals[i][0] = p.x;
-			obj.vertex_normals[i][1] = p.y;
-			obj.vertex_normals[i][2] = p.z;
-		}
+		obj.mesh[i] = obj.mesh[i].rotate(angle);
+
 	}
-	/*else
+	for (int i = 0; i < std::size(obj.points); i++)
 	{
-		for (int i = 0; i < std::size(this->mesh); i++) {
-			trises.push_back(this->mesh[i].rotate(angle));
-			trises.push_back(this->border[i].rotate(angle));
-		}
-	}*/
+		obj.points[i] = obj.points[i].rotate(angle);
+		obj.vertex_normals_vis[i].rotate(angle);
+		p.create(obj.vertex_normals[i][0], obj.vertex_normals[i][1], obj.vertex_normals[i][2]);
+		p = p.rotate(angle, true);
+		obj.vertex_normals[i][0] = p.x;
+		obj.vertex_normals[i][1] = p.y;
+		obj.vertex_normals[i][2] = p.z;
+	}
 	return obj;
+}
+void Object::calculate_center()
+{
+	if (!this->center.initialized)
+	{
+		float x, y, z;
+		x = 0;
+		y = 0;
+		z = 0;
+		for (int i = 0; i < std::size(this->mesh); i++)
+		{
+			x += this->mesh[i].center_point().x;
+			y += this->mesh[i].center_point().y;
+			z += this->mesh[i].center_point().z;
+		}
+		x = x / std::size(this->mesh);
+		y = y / std::size(this->mesh);
+		z = z / std::size(this->mesh);
+		this->center.create(x, y, z);
+	}
 }
