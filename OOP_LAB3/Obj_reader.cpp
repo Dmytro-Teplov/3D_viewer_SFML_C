@@ -121,7 +121,7 @@ Object reading(std::string filename)
 		if (text[0] == 'f' && text[1] == ' ')
 		{
 			vertices = parse_face(text);
-			tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1]);
+			tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1], std::size(f));
 			
 			/*if (vn.empty()) 
 			{

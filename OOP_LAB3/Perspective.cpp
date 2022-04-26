@@ -72,7 +72,7 @@ int main()
     Edge e;
     Object cubee;
     cubee = reading("CUBE2.obj");
-    //cubee.scale(1.5);
+    cubee.scale(1.5);
     cubee.paint(violet);
     sf::ContextSettings settings;
     settings.antialiasingLevel = 1;

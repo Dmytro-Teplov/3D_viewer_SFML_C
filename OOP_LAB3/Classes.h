@@ -59,6 +59,7 @@ class Edge
 {
 public:
 	Point p1, p2;
+	Point* p_1,*p_2;
 	Point s1, s2;
 	float thicc=4;
 
@@ -85,9 +86,10 @@ public:
 	Point v2;
 	Point v3;
 	Point centroid;
+	bool border = false;
 	float r_angle=0;
 	std::vector<float> normalv;
-	std::vector<Edge*> borders;
+	std::vector<Edge> borders = {Edge(),Edge(),Edge()};
 	sf::Color color = sf::Color(100, 100, 100);
 	sf::Color border_color = sf::Color(50, 50, 50);
 	int border_width = 0;

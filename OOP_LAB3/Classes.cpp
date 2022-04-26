@@ -352,13 +352,13 @@ void Triangle::draw_3d(sf::RenderWindow& window, Point light,bool islit,bool gou
 		}
 		convex.setFillColor(this->color);
 		window.draw(convex);
-		/*if (border)
+		if (border)
 		{
 			for (int i = 0; i < 3; i++)
 			{
 				this->borders[i].draw_3d(window);
 			}
-		}*/
+		}
 	}
 	else
 	{
@@ -421,6 +421,24 @@ void Triangle::create(Point v1, Point v2, Point v3)
 	this->v1 = v1;
 	this->v2 = v2;
 	this->v3 = v3;
+	Edge e1, e2, e3;
+	e1.create(v1, v2);
+	this->borders[0] = e1;
+	e2.create(v1, v3);
+	this->borders[1] = e2;
+	e3.create(v2, v3);
+	this->borders[2] = e3;
+	this->border = true;
+	/*if (!this->border) {
+		Edge e1, e2, e3;
+		e1.create(v1, v2);
+		this->borders.push_back(&e1);
+		e2.create(v1, v3);
+		this->borders.push_back(&e2);
+		e3.create(v2, v3);
+		this->borders.push_back(&e3);
+		this->border = true;
+	}*/
 }
 void Triangle::create(Point& v1, Point& v2, Point& v3, int tris_index)
 {
@@ -433,13 +451,16 @@ void Triangle::create(Point& v1, Point& v2, Point& v3, int tris_index)
 	v1.tripoints[tris_index] = "v1";
 	v2.tripoints[tris_index] = "v2";
 	v3.tripoints[tris_index] = "v3";
-	Edge e1,e2,e3;
+	
+	
+	Edge e1, e2, e3;
 	e1.create(v1, v2);
-	this->borders.push_back(&e1);
+	this->borders[0] = e1;
 	e2.create(v1, v3);
-	this->borders.push_back(&e2);
+	this->borders[1] = e2;
 	e3.create(v2, v3);
-	this->borders.push_back(&e3);
+	this->borders[2] = e3;
+	this->border = true;
 	std::cout << "ty";
 	
 }
@@ -451,7 +472,6 @@ float Triangle::center()
 		centre.create((this->v1.x + this->v2.x + this->v3.x) / 3.0, (this->v1.y + this->v2.y + this->v3.y) / 3.0, (this->v1.z + this->v2.z + this->v3.z) / 3.0);
 		this->centroid = centre;
 	}
-	
 	return this->centroid.z;
 }
 Point Triangle::center_point()
@@ -530,6 +550,7 @@ Triangle Triangle::rotate(float angle)
 	tris.normalv = this->normalv;
 	this->r_angle = angle;
 	tris.color = this->color;
+	
 
 	return tris;
 }
@@ -582,6 +603,8 @@ void Triangle::operator=(Triangle tris)
 	this->centroid = tris.centroid;
 	this->normalv = tris.normalv;
 	this->r_angle = tris.r_angle;
+	this->border = tris.border;
+	this->borders = tris.borders;
 }
 Triangle Triangle::operator*(float k)
 {
@@ -641,14 +664,14 @@ void Object::scale(float koefficient)
 		this->points[i] = this->points[i] * koefficient;
 	}
 }
-void swap(std::vector<Triangle> tris, int pos1, int pos2)
+void swap(std::vector<Triangle> &tris, int pos1, int pos2)
 {
 	Triangle t1;
 	t1=tris[pos1];
 	tris[pos1] = tris[pos2];
 	tris[pos2] = t1;
 }
-int partition(std::vector<Triangle> tris, int low, int high)
+int partition(std::vector<Triangle> &tris, int low, int high)
 {
 	float pivot = tris[high].center();
 	int i = (low - 1);
@@ -663,7 +686,7 @@ int partition(std::vector<Triangle> tris, int low, int high)
 	swap(tris, i+1,high);
 	return (i + 1);
 }
-void quickSort(std::vector<Triangle> tris, int low, int high)
+void quickSort(std::vector<Triangle> &tris, int low, int high)
 {
 	if (low < high)
 	{
@@ -830,7 +853,6 @@ Object Object::rotate(float angle)
 	for (int i = 0; i < std::size(obj.mesh); i++)
 	{
 		obj.mesh[i] = obj.mesh[i].rotate(angle);
-
 	}
 	for (int i = 0; i < std::size(obj.points); i++)
 	{
