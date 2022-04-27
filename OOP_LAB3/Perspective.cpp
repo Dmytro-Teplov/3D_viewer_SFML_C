@@ -65,15 +65,14 @@ int main()
     v1.create(100,123,50);
     v2.create(50,-40,30);
     v3.create(-40,10,100);
-    Triangle tris1,tris2;
+    Face tris1,tris2;
     tris1.create(v1,v2,v3);
     tris2 = tris1;
     tris2.scale(0.5);
     Edge e;
-    Object cubee;
-    cubee = reading("CUBE2.obj");
+    Object cubee(reading("Quad_test.obj"));
     cubee.scale(1.5);
-    cubee.paint(violet);
+    cubee.paint("Green");
     sf::ContextSettings settings;
     settings.antialiasingLevel = 1;
     sf::RenderWindow window(sf::VideoMode(1280, 720), "3D Viewer", sf::Style::Default, settings);
@@ -83,6 +82,7 @@ int main()
     window.setView(view);
     bool gour = false;
     bool lit = false;
+    bool bord = false;
     while (window.isOpen())
     {
         sf::Event event;
@@ -101,7 +101,7 @@ int main()
         window.clear();
         window.draw(background);
        
-        cubee.draw(window,l, sf::Color(120, 255, 20),true,false,i,gour);
+        cubee.draw(window,l, sf::Color(120, 255, 20), true,false,i,true,bord);
 
         window.draw(islit);
         window.draw(islit_text);
@@ -115,6 +115,12 @@ int main()
         if (board.isKeyPressed(sf::Keyboard::D))
         {
             i += 10;
+        }
+        if (board.isKeyPressed(sf::Keyboard::B))
+        {
+            bord = !bord;
+            
+            sf::sleep(sf::milliseconds(200));
         }
         if (board.isKeyPressed(sf::Keyboard::G))
         {

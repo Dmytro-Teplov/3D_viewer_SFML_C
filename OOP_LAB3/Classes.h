@@ -62,6 +62,7 @@ public:
 	Point* p_1,*p_2;
 	Point s1, s2;
 	float thicc=4;
+	sf::Color color = sf::Color(50, 50, 50);
 
 	void create(Point a, Point b);
 	void create(Point* a, Point* b);
@@ -77,14 +78,11 @@ public:
 	
 };
 
-class Triangle
+class Face
 {
-
-	
 public:
-	Point v1;
-	Point v2;
-	Point v3;
+	std::vector<Point> v = { Point(),Point(),Point() };
+	int n = 1;
 	Point centroid;
 	bool border = false;
 	float r_angle=0;
@@ -97,52 +95,67 @@ public:
 	float center();
 	void scale_this(float lambda);
 	void create(Point v1, Point v2, Point v3);
+	void create(Point v1, Point v2, Point v3, Point v4);
 	void create(Point& v1, Point& v2, Point& v3, int tris_index);
+	void create(Point& v1, Point& v2, Point& v3, Point& v4, int tris_index);
 	void draw(sf::RenderWindow& window) const;
 	void draw_3d(sf::RenderWindow& window, Point light, bool islit=false, bool gouraud = true, bool border = false);
 	void paint(std::string Col);
 	void paint(HEX color);
 	void change_position(float x, float y);
 
-	Triangle rotate(float angle);
-	void operator=(Triangle tris);
+	Face rotate(float angle);
+	void operator=(Face tris);
 	void lightness(float l);
 	float angle(std::vector<float> vec2);
 	Point center_point();
-	Triangle scale(float lambda);
-	Triangle operator*(float k);
+	Face scale(float lambda);
+	Face operator*(float k);
 	
 	
-	friend std::ostream& operator<<(std::ostream& os, Triangle t);
+	friend std::ostream& operator<<(std::ostream& os, Face t);
 	std::vector<float> normal(bool update= true);
 };
 
 class Object
 {
 public:
+	
 	Point center;
-	std::vector<Triangle> mesh;
-	std::vector<Triangle> mesh_rotated;
-	std::vector<Point> points;
 
+	std::vector<Face> mesh;
+	
+	std::vector<Point> points;
 	std::vector<std::vector<float>> vertex_normals;
 	std::vector<Edge> vertex_normals_vis;
-	std::vector<Triangle> border;
 	sf::Color color = sf::Color(100, 100, 100);
 	float r_angle = 0;
 	bool sorted = false;
 
-	//void change_position(float x,float y);
+	Object()
+	{
+	}
+	Object(std::vector<Face> mesh)
+	{
+		this->mesh = mesh;
+	}
+	
+
 	void scale(float percent);
-	void draw(sf::RenderWindow& window, Point light, sf::Color = sf::Color(100, 100, 100), bool islit = false, bool normal_visible = false, float angle = 0,  bool gouraud = true);
-	void renderInHalfs(sf::RenderWindow& window, Point light);
-	void create_hard_mode(std::vector<Triangle> mesh);
-	void create(std::vector<Triangle> mesh, std::vector<Point> points);
+	void draw(sf::RenderWindow& window, Point light, sf::Color = sf::Color(100, 100, 100), bool islit = false, bool normal_visible = false, float angle = 0,  bool gouraud = true,bool border =false);
+	
+
+	
+	void create(std::vector<Face> mesh, std::vector<Point> points);
+	void operator=(std::vector<Face> mesh);
+
+	void paint(std::string Col);
 	void paint(HEX color);
-	void operator=(std::vector<Triangle> mesh);
 	void operator=(Object obj);
 	friend std::ostream& operator<<(std::ostream& os, Object o);
 	Object rotate(float angle);
+
+	void Subdivide(int i,std::string subd_type="Catmull-Clark");
 private:
 	void calculate_center();
 };
