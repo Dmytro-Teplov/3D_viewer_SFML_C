@@ -125,7 +125,6 @@ Object reading(std::string filename)
 				tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1], std::size(f));
 			else if(std::size(vertices) == 4)
 				tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1], v[vertices[3][0] - 1], std::size(f));
-			
 			f.push_back(tris);
 		}
 	}
@@ -133,6 +132,5 @@ Object reading(std::string filename)
 	obj.create(f,v);
 	//mesh = f;
 	myfile.close();
-
 	return obj;
 }

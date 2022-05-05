@@ -66,12 +66,13 @@ int main()
     v2.create(50,-40,30);
     v3.create(-40,10,100);
     Face tris1,tris2;
-    tris1.create(v1,v2,v3);
+    tris1.update(v1,v2,v3);
     tris2 = tris1;
     tris2.scale(0.5);
     Edge e;
-    Object cubee(reading("Quad_test.obj"));
-    cubee.scale(1.5);
+    Object cubee = reading("tetris.obj");
+    //cubee.scale(1.5);
+    
     cubee.paint("Green");
     sf::ContextSettings settings;
     settings.antialiasingLevel = 1;
@@ -101,7 +102,7 @@ int main()
         window.clear();
         window.draw(background);
        
-        cubee.draw(window,l, sf::Color(120, 255, 20), true,false,i,true,bord);
+        cubee.draw(window,l, sf::Color(120, 255, 20), true,false,i,gour,bord);
 
         window.draw(islit);
         window.draw(islit_text);
@@ -120,6 +121,11 @@ int main()
         {
             bord = !bord;
             
+            sf::sleep(sf::milliseconds(200));
+        }
+        if (board.isKeyPressed(sf::Keyboard::S))
+        {
+            cubee = cubee.Subdivide(1);
             sf::sleep(sf::milliseconds(200));
         }
         if (board.isKeyPressed(sf::Keyboard::G))
@@ -146,6 +152,11 @@ int main()
         window.display();
     }
     
+    //Point p1(100, 150), p2(121, 110), p3(103, 134);
+    //Edge e1(p1, p2), e2(p2, p1), e3(p3, p2);
+    //std::vector<Edge> v = {e1,e3,e2,e3};
+    //auto it = std::find(v.begin(),v.end(),e2);
+    //std::cout << *it;
    
     return 0;
 }
