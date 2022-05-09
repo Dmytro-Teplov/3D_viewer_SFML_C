@@ -70,7 +70,7 @@ int main()
     tris2 = tris1;
     tris2.scale(0.5);
     Edge e;
-    Object cubee = reading("holes_test.obj");
+    Object cubee = reading("quad_tris_test.obj");
     //cubee.scale(1.5);
     
     cubee.paint(sf::Color(0,0,255));

@@ -832,6 +832,7 @@ void Face::operator=(Face tris)
 	this->r_angle = tris.r_angle;
 	this->border = tris.border;
 	this->borders = tris.borders;
+	this->n = tris.n;
 }
 bool Face::operator==(Face tris)//NOT CHECKED
 {
