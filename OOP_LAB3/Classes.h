@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <functional>
 #include <vector>
 #include <deque>
 #include <algorithm>
@@ -94,6 +95,7 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, Edge& e);
 	void operator=(Edge e);
 	bool operator==(Edge const& e) const;
+	static bool contains(Edge& e,Point p);
 	Edge operator*(float k);
 	
 };
@@ -173,7 +175,7 @@ public:
 	void operator=(std::vector<Face> mesh);
 
 	void paint(std::string Col);
-	void paint(HEX color);
+	void paint(sf::Color color);
 	void operator=(Object obj);
 	friend std::ostream& operator<<(std::ostream& os, Object o);
 	Object rotate(float angle);

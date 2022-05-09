@@ -70,10 +70,10 @@ int main()
     tris2 = tris1;
     tris2.scale(0.5);
     Edge e;
-    Object cubee = reading("tetris.obj");
+    Object cubee = reading("holes_test.obj");
     //cubee.scale(1.5);
     
-    cubee.paint("Green");
+    cubee.paint(sf::Color(0,0,255));
     sf::ContextSettings settings;
     settings.antialiasingLevel = 1;
     sf::RenderWindow window(sf::VideoMode(1280, 720), "3D Viewer", sf::Style::Default, settings);
@@ -82,7 +82,7 @@ int main()
     float i = 1;
     window.setView(view);
     bool gour = false;
-    bool lit = false;
+    bool lit = true;
     bool bord = false;
     while (window.isOpen())
     {
@@ -102,7 +102,7 @@ int main()
         window.clear();
         window.draw(background);
        
-        cubee.draw(window,l, sf::Color(120, 255, 20), true,false,i,gour,bord);
+        cubee.draw(window,l, sf::Color(120, 255, 20), lit,false,i,gour,bord);
 
         window.draw(islit);
         window.draw(islit_text);
