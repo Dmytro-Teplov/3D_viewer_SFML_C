@@ -102,7 +102,8 @@ Object reading(std::string filename)
 	std::vector<Point> v;
 	std::vector<Point> vt;
 	std::vector<Point> vn;
-	Face tris,quad;
+	//Face tris,quad;
+	Face face;
 	std::vector<Face> f;
 	while (getline(myfile, text))
 	{
@@ -121,14 +122,24 @@ Object reading(std::string filename)
 		if (text[0] == 'f' && text[1] == ' ')
 		{
 			vertices = parse_face(text);
-			if (std::size(vertices) == 3) {
+			/*if (std::size(vertices) == 3) {
 				tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1], std::size(f));
 				f.push_back(tris);
 			}
 			else if (std::size(vertices) == 4) {
 				quad.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1], v[vertices[3][0] - 1], std::size(f));
 				f.push_back(quad);
+			}*/
+			std::vector<Point*> pointz;
+			for (int i = 0; i < std::size(vertices); i++)
+			{
+				pointz.push_back(&v[vertices[i][0] - 1]);
 			}
+			face.create(pointz, std::size(f));
+			pointz.clear();
+			f.push_back(face);
+			Face face;
+			//vertex.clear();
 		}
 	}
 	Object obj;

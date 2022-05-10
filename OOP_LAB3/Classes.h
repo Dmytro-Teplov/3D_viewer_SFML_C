@@ -4,6 +4,7 @@
 #include <vector>
 #include <deque>
 #include <algorithm>
+#include <numeric>
 #include <map>
 #include <string_view>
 #include <math.h> 
@@ -74,7 +75,7 @@ public:
 	std::vector<int> adjacentFaces;
 
 	float thicc=4;
-	sf::Color color = sf::Color(50, 50, 50);
+	sf::Color color = sf::Color(250, 250, 250);
 
 	Edge(){}
 
@@ -89,6 +90,7 @@ public:
 	void create(Point a, std::vector<float> normalv);
 	void create(float x1, float x2, float y1, float y2);
 	void clear();
+	Point center();
 	void draw(sf::RenderWindow& window) ;
 	void draw_3d(sf::RenderWindow& window) const;
 	void rotate(float angle);
@@ -103,7 +105,7 @@ public:
 class Face
 {
 public:
-	std::vector<Point> v = { Point(),Point(),Point() };
+	std::vector<Point> v;
 	int n = 1;
 	Point centroid;
 	bool border = false;
@@ -118,12 +120,10 @@ public:
 
 	float center();
 	void scale_this(float lambda);
-	//void create(Point v1, Point v2, Point v3);
-	//void create(Point v1, Point v2, Point v3, Point v4);
-	void update(Point v1, Point v2, Point v3);
-	void update(Point v1, Point v2, Point v3, Point v4);
-	void create(Point& v1, Point& v2, Point& v3, int tris_index);
-	void create(Point& v1, Point& v2, Point& v3, Point& v4, int tris_index);
+	//void update(Point v1, Point v2, Point v3);
+	//void update(Point v1, Point v2, Point v3, Point v4);
+	void update(std::vector<Point> v);
+	void create(std::vector<Point*> v, int tris_index);
 	void draw(sf::RenderWindow& window) const;
 	void draw_3d(sf::RenderWindow& window, Point light, bool islit=false, bool gouraud = true, bool border = false);
 	void paint(std::string Col);

@@ -66,11 +66,11 @@ int main()
     v2.create(50,-40,30);
     v3.create(-40,10,100);
     Face tris1,tris2;
-    tris1.update(v1,v2,v3);
+    tris1.update(std::vector<Point>({ v1, v2, v3 }));
     tris2 = tris1;
     tris2.scale(0.5);
     Edge e;
-    Object cubee = reading("quad_tris_test.obj");
+    Object cubee = reading("hexa_test.obj");
     //cubee.scale(1.5);
     
     cubee.paint(sf::Color(0,0,255));
@@ -123,9 +123,14 @@ int main()
             
             sf::sleep(sf::milliseconds(200));
         }
-        if (board.isKeyPressed(sf::Keyboard::S))
+        if (board.isKeyPressed(sf::Keyboard::C))
         {
             cubee = cubee.Subdivide(1);
+            sf::sleep(sf::milliseconds(200));
+        }
+        if (board.isKeyPressed(sf::Keyboard::L))
+        {
+            cubee = cubee.Subdivide(1,"Linear");
             sf::sleep(sf::milliseconds(200));
         }
         if (board.isKeyPressed(sf::Keyboard::G))
@@ -137,7 +142,7 @@ int main()
                 gouraud.setString("False");
             sf::sleep(sf::milliseconds(200));
         }
-        if (board.isKeyPressed(sf::Keyboard::L))
+        /*if (board.isKeyPressed(sf::Keyboard::L))
         {
             lit = !lit;
             if(lit)
@@ -146,7 +151,7 @@ int main()
                 islit.setString("False");
             sf::sleep(sf::milliseconds(200));
 
-        }
+        }*/
         
         
         window.display();
