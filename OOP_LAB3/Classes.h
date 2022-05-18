@@ -64,7 +64,9 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, Point p);
 	static bool compare_x(Point p1,Point p2);
 	Point rotate(float angle,bool is3d=false);
+	Point cross_product(Point a, Point b);
 	std::vector<float> vector(Point A);
+	void sort_clockwise(std::vector<Point>& vs, std::vector<int>& indices);
 	void Gouraud(Point& v1, std::vector<float>normalv , Point light);
 };
 class Edge
@@ -91,6 +93,7 @@ public:
 	void create(float x1, float x2, float y1, float y2);
 	void clear();
 	Point center();
+	
 	void draw(sf::RenderWindow& window) ;
 	void draw_3d(sf::RenderWindow& window) const;
 	void rotate(float angle);
@@ -163,13 +166,8 @@ public:
 	float r_angle = 0;
 	bool sorted = false;
 
-	
-	
-
 	void scale(float percent);
 	void draw(sf::RenderWindow& window, Point light, sf::Color = sf::Color(100, 100, 100), bool islit = false, bool normal_visible = false, float angle = 0,  bool gouraud = true,bool border =false);
-	
-
 	
 	void create(std::vector<Face> mesh, std::vector<Point> points);
 	void operator=(std::vector<Face> mesh);

@@ -13,6 +13,75 @@ void show(std::vector<int> A)
 	}
 	std::cout << "n";
 }
+float dot_product(Point a, Point b) 
+{
+	float product = 0;
+	product += a.x * b.x;
+	product += a.y * b.y;
+	product += a.z * b.z;
+	return product;
+}
+Point cross_product(Point a, Point b) 
+{
+	Point c;
+	c.x = a.y * b.z - a.z * b.y;
+	c.y = -(a.x * b.z - a.z * b.x);
+	c.z = a.x * b.y - a.y * b.x;
+	return c;
+}
+bool less(Point a, Point b,Point center)
+{
+	a = a - center;
+	b = b - center;
+	int det = dot_product(cross_product(a,b),center);
+	if (det > 0)
+		return true;
+	if (det < 0)
+		return false;
+
+	int d1 = pow(a.x,2)+ pow(a.y, 2)+ pow(a.z, 2);
+	int d2 = pow(b.x,2)+ pow(b.y, 2)+ pow(b.z, 2);
+	return d1 < d2;
+}
+
+void swap2(std::vector<Point>& vs, int pos1, int pos2, std::vector<int>& ind)
+{
+	Point t1;
+	t1 = vs[pos1];
+	vs[pos1] = vs[pos2];
+	vs[pos2] = t1;
+
+	int i1;
+	i1 = ind[pos1];
+	ind[pos1] = ind[pos2];
+	ind[pos2] = i1;
+	//if (tris[pos1 or 2] is backwards): delete
+	//else: previous thing 
+}
+int partition2(std::vector<Point>& vs, int low, int high, Point center, Point p, Point r, std::vector<int>& ind)
+{
+	Point pivot = vs[high];
+	int i = (low - 1);
+	for (int j = low; j <= high - 1; j++)
+	{
+		if (less(vs[j],pivot, center))
+		{
+			i++;
+			swap2(vs, i, j,ind);
+		}
+	}
+	swap2(vs, i + 1, high,ind);
+	return (i + 1);
+}
+void quickSort2(std::vector<Point>& vs, int low, int high, Point center, Point p, Point r, std::vector<int>& ind)
+{
+	if (low < high)
+	{
+		int pi = partition2(vs, low, high, center, p, r,ind);
+		quickSort2(vs, low, pi - 1, center, p, r,ind);
+		quickSort2(vs, pi + 1, high, center, p, r,ind);
+	}
+}
 
 std::vector<double> multiply(std::vector<std::vector<double>> A, std::vector<double> b)
 {
@@ -219,16 +288,27 @@ Point Point::rotate(float angles,bool is3d)
 	vr.adjacent_tris = this->adjacent_tris;
 	vr.color = this->color;
 	vr.tripoints = this->tripoints;
-	//Rotating normal
-	/*if (!this->normalv.empty()) {
-		Point nr;
-		nr.create(this->normalv[0], this->normalv[1], this->normalv[2]);
-		nr.rotate(angles);
-		vr.normalv.push_back(nr.x);
-		vr.normalv.push_back(nr.y);
-		vr.normalv.push_back(nr.z);
-	}*/
 	return vr;
+}
+void sort_clockwise(std::vector<Point> vs, std::vector<int>& indices)
+{
+	Point c;
+	for (int i = 0; i < std::size(vs); i++)
+	{
+		
+		c = c + vs[i];
+
+	}
+	/*for (int i = 0; i < std::size(vs); i++)
+	{
+
+		vs[i]= vs[i]-c;
+
+	}*/
+	c = c / std::size(vs);
+	Point r = vs[0]-c;
+	Point p = cross_product(r, c);
+	quickSort2(vs, 0, std::size(vs) - 1, c,p, r, indices);
 }
 std::vector<float> Point::vector(Point A)
 {
@@ -876,15 +956,7 @@ void Face::operator=(Face tris)
 }
 bool Face::operator==(Face tris)//NOT CHECKED
 {
-	if ((this->border_color == tris.border_color) &&
-		(this->color == tris.color) &&
-		(this->v == tris.v) &&
-		(this->border_width == tris.border_width) &&
-		(this->centroid == tris.centroid) &&
-		(this->normalv == tris.normalv) &&
-		(this->r_angle == tris.r_angle) &&
-		(this->border == tris.border) &&
-		(this->borders == tris.borders))
+	if (this->v == tris.v)
 		return true;
 	else
 		return false;
@@ -1340,6 +1412,87 @@ Object Object::Subdivide(int i, std::string subd_type)
 			}
 		}
 	}
+	else if (subd_type == "Doo-Sabin")//ADD THE HOLE 
+	{
+		int amount_of_polys=std::size(this->mesh)+std::size(this->points)+std::size(this->border);
+		for (int i = 0; i < std::size(this->mesh); i++)//CALCULATING FACE SHRINKING
+		{
+			std::vector<int> vertex(std::size(this->mesh[i].v));
+			Point new_v;
+			for (int j = 0; j < std::size(this->mesh[i].v); j++)
+			{
+				new_v.middle(this->mesh[i].v[j], this->mesh[i].center_point());
+				pSbD.push_back(new_v);
+				vertex[j] = std::size(pSbD) - 1;
+			}
+			vertices.push_back(vertex);
+		}
+		for (int i = 0; i < std::size(this->points); i++)//CALCULATING POINT SUBDIVISION
+		{
+			std::vector<int> vertex(std::size(this->points[i].adjacent_tris));
+			Point new_v;
+			for (int j = 0; j < std::size(this->points[i].adjacent_tris); j++)
+			{
+				new_v.middle(this->points[i],this->mesh[this->points[i].adjacent_tris[j]].center_point());
+				auto it = std::find(pSbD.begin(), pSbD.end(), new_v);
+				int index = std::distance(pSbD.begin(), it);
+				vertex[j] = index;
+			}
+			//SORT CLOCKWISE
+			std::vector<Point> vs(std::size(vertex));
+			for (int j = 0; j < std::size(vertex); j++)
+			{
+				vs[j] = pSbD[vertex[j]];
+			}
+			sort_clockwise(vs, vertex);
+			vs.clear();
+			vertices.push_back(vertex);
+		}
+		for (int i = 0; i < std::size(this->border); i++)//CALCULATING EDGE SUBDIVISION
+		{
+			std::vector<int> vertex(4);
+			Point new_v;
+			//vertex.clear();
+			if (std::size(this->border[i].adjacentFaces) == 2)
+			{
+				//FIRST POINT - FIRST FACE
+				new_v.middle(this->border[i].p2, this->mesh[this->border[i].adjacentFaces[0]].center_point());
+				auto it = std::find(pSbD.begin(), pSbD.end(), new_v);
+				int index = std::distance(pSbD.begin(), it);
+				vertex[0] = index;
+				//SECOND POINT - FIRST FACE
+				new_v.middle(this->border[i].p1, this->mesh[this->border[i].adjacentFaces[0]].center_point());
+				it = std::find(pSbD.begin(), pSbD.end(), new_v);
+				index = std::distance(pSbD.begin(), it);
+				vertex[1] = index;
+				//SECOND POINT - SECOND FACE
+				new_v.middle(this->border[i].p1, this->mesh[this->border[i].adjacentFaces[1]].center_point());
+				it = std::find(pSbD.begin(), pSbD.end(), new_v);
+				index = std::distance(pSbD.begin(), it);
+				vertex[2] = index;
+				//FIRST POINT - SECOND FACE
+				new_v.middle(this->border[i].p2, this->mesh[this->border[i].adjacentFaces[1]].center_point());
+				it = std::find(pSbD.begin(), pSbD.end(), new_v);
+				index = std::distance(pSbD.begin(), it);
+				vertex[3] = index;
+			}
+			vertices.push_back(vertex);
+		}
+		for (int i = 0; i < std::size(this->mesh)+ std::size(this->border)+ std::size(this->points); i++)
+		{
+			Face face;
+			std::vector<Point*> pointz;
+			for (int j = 0; j < std::size(vertices[i]); j++)
+			{
+				pointz.push_back(&pSbD[vertices[i][j]]);
+			}
+			face.create(pointz, std::size(subdivided));
+			pointz.clear();
+			subdivided.push_back(face);
+
+		}
+	}
+	
 	Object obj;
 	obj.create(subdivided, pSbD);
 	obj.color = this->color;

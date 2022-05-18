@@ -70,7 +70,7 @@ int main()
     tris2 = tris1;
     tris2.scale(0.5);
     Edge e;
-    Object cubee = reading("hexa_test.obj");
+    Object cubee = reading("CUBE.obj");
     //cubee.scale(1.5);
     
     cubee.paint(sf::Color(0,0,255));
@@ -130,7 +130,7 @@ int main()
         }
         if (board.isKeyPressed(sf::Keyboard::L))
         {
-            cubee = cubee.Subdivide(1,"Linear");
+            cubee = cubee.Subdivide(1,"Doo-Sabin");
             sf::sleep(sf::milliseconds(200));
         }
         if (board.isKeyPressed(sf::Keyboard::G))
