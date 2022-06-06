@@ -130,6 +130,12 @@ int main()
         }
         if (board.isKeyPressed(sf::Keyboard::L))
         {
+            cubee = cubee.Subdivide(1,"Linear");
+            sf::sleep(sf::milliseconds(200));
+        }
+        
+        if (board.isKeyPressed(sf::Keyboard::N))
+        {
             cubee = cubee.Subdivide(1,"Doo-Sabin");
             sf::sleep(sf::milliseconds(200));
         }
@@ -142,7 +148,7 @@ int main()
                 gouraud.setString("False");
             sf::sleep(sf::milliseconds(200));
         }
-        /*if (board.isKeyPressed(sf::Keyboard::L))
+        if (board.isKeyPressed(sf::Keyboard::I))
         {
             lit = !lit;
             if(lit)
@@ -151,7 +157,7 @@ int main()
                 islit.setString("False");
             sf::sleep(sf::milliseconds(200));
 
-        }*/
+        }
         
         
         window.display();
