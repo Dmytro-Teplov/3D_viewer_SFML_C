@@ -65,15 +65,15 @@ int main()
     v1.create(100,123,50);
     v2.create(50,-40,30);
     v3.create(-40,10,100);
-    Triangle tris1,tris2;
-    tris1.create(v1,v2,v3);
+    Face tris1,tris2;
+    tris1.update(std::vector<Point>({ v1, v2, v3 }));
     tris2 = tris1;
     tris2.scale(0.5);
     Edge e;
-    Object cubee;
-    cubee = reading("CUBE2.obj");
-    cubee.scale(1.5);
-    cubee.paint(violet);
+    Object cubee = reading("CUBE.obj");
+    //cubee.scale(1.5);
+    
+    cubee.paint(sf::Color(0,0,255));
     sf::ContextSettings settings;
     settings.antialiasingLevel = 1;
     sf::RenderWindow window(sf::VideoMode(1280, 720), "3D Viewer", sf::Style::Default, settings);
@@ -82,7 +82,8 @@ int main()
     float i = 1;
     window.setView(view);
     bool gour = false;
-    bool lit = false;
+    bool lit = true;
+    bool bord = false;
     while (window.isOpen())
     {
         sf::Event event;
@@ -101,7 +102,7 @@ int main()
         window.clear();
         window.draw(background);
        
-        cubee.draw(window,l, sf::Color(120, 255, 20),true,false,i,gour);
+        cubee.draw(window,l, sf::Color(120, 255, 20), lit,false,i,gour,bord);
 
         window.draw(islit);
         window.draw(islit_text);
@@ -116,6 +117,22 @@ int main()
         {
             i += 10;
         }
+        if (board.isKeyPressed(sf::Keyboard::B))
+        {
+            bord = !bord;
+            
+            sf::sleep(sf::milliseconds(200));
+        }
+        if (board.isKeyPressed(sf::Keyboard::C))
+        {
+            cubee = cubee.Subdivide(1);
+            sf::sleep(sf::milliseconds(200));
+        }
+        if (board.isKeyPressed(sf::Keyboard::L))
+        {
+            cubee = cubee.Subdivide(1,"Doo-Sabin");
+            sf::sleep(sf::milliseconds(200));
+        }
         if (board.isKeyPressed(sf::Keyboard::G))
         {
             gour = !gour;
@@ -125,7 +142,7 @@ int main()
                 gouraud.setString("False");
             sf::sleep(sf::milliseconds(200));
         }
-        if (board.isKeyPressed(sf::Keyboard::L))
+        /*if (board.isKeyPressed(sf::Keyboard::L))
         {
             lit = !lit;
             if(lit)
@@ -134,12 +151,17 @@ int main()
                 islit.setString("False");
             sf::sleep(sf::milliseconds(200));
 
-        }
+        }*/
         
         
         window.display();
     }
     
+    //Point p1(100, 150), p2(121, 110), p3(103, 134);
+    //Edge e1(p1, p2), e2(p2, p1), e3(p3, p2);
+    //std::vector<Edge> v = {e1,e3,e2,e3};
+    //auto it = std::find(v.begin(),v.end(),e2);
+    //std::cout << *it;
    
     return 0;
 }

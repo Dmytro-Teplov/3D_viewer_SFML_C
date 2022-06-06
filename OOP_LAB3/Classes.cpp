@@ -1,4 +1,5 @@
 #include "Classes.h"
+std::vector<Edge> border_global;
 double to_rads(double degree)
 {
 	double pi = 3.14159265359;
@@ -10,7 +11,76 @@ void show(std::vector<int> A)
 	{
 		std::cout << A[i] << "\t";
 	}
-	std::cout << "\n";
+	std::cout << "n";
+}
+float dot_product(Point a, Point b) 
+{
+	float product = 0;
+	product += a.x * b.x;
+	product += a.y * b.y;
+	product += a.z * b.z;
+	return product;
+}
+Point cross_product(Point a, Point b) 
+{
+	Point c;
+	c.x = a.y * b.z - a.z * b.y;
+	c.y = -(a.x * b.z - a.z * b.x);
+	c.z = a.x * b.y - a.y * b.x;
+	return c;
+}
+bool less(Point a, Point b,Point center)
+{
+	a = a - center;
+	b = b - center;
+	int det = dot_product(cross_product(a,b),center);
+	if (det > 0)
+		return true;
+	if (det < 0)
+		return false;
+
+	int d1 = pow(a.x,2)+ pow(a.y, 2)+ pow(a.z, 2);
+	int d2 = pow(b.x,2)+ pow(b.y, 2)+ pow(b.z, 2);
+	return d1 < d2;
+}
+
+void swap2(std::vector<Point>& vs, int pos1, int pos2, std::vector<int>& ind)
+{
+	Point t1;
+	t1 = vs[pos1];
+	vs[pos1] = vs[pos2];
+	vs[pos2] = t1;
+
+	int i1;
+	i1 = ind[pos1];
+	ind[pos1] = ind[pos2];
+	ind[pos2] = i1;
+	//if (tris[pos1 or 2] is backwards): delete
+	//else: previous thing 
+}
+int partition2(std::vector<Point>& vs, int low, int high, Point center, Point p, Point r, std::vector<int>& ind)
+{
+	Point pivot = vs[high];
+	int i = (low - 1);
+	for (int j = low; j <= high - 1; j++)
+	{
+		if (less(vs[j],pivot, center))
+		{
+			i++;
+			swap2(vs, i, j,ind);
+		}
+	}
+	swap2(vs, i + 1, high,ind);
+	return (i + 1);
+}
+void quickSort2(std::vector<Point>& vs, int low, int high, Point center, Point p, Point r, std::vector<int>& ind)
+{
+	if (low < high)
+	{
+		int pi = partition2(vs, low, high, center, p, r,ind);
+		quickSort2(vs, low, pi - 1, center, p, r,ind);
+		quickSort2(vs, pi + 1, high, center, p, r,ind);
+	}
 }
 
 std::vector<double> multiply(std::vector<std::vector<double>> A, std::vector<double> b)
@@ -112,19 +182,40 @@ void Point::operator=(Point d)
 	this->adjacent_tris = d.adjacent_tris;
 	this->color = d.color;
 	this->tripoints = d.tripoints;
+	this->normalv = d.normalv;
 }
-bool Point::operator==(Point p)
+bool Point::operator==(Point const& p) const
 {
-	return this->x==p.x&& this->y == p.y;
+	return this->x==p.x && this->y == p.y && this->z==p.z;
 }
 Point Point::operator*(float k)
 {
-	
-	this->x = this->x* k;
-	this->y = this->y* k;
-	this->z = this->z* k;
-	return *this;
+	Point p = *this;
+	p.x = this->x* k;
+	p.y = this->y* k;
+	p.z = this->z* k;
+	this->initialized = true;
+	return p;
 }
+Point Point::operator+(Point b)//NOT TESTED
+{
+	Point p = *this;
+	p.x += b.x;
+	p.y += b.y;
+	p.z += b.z;
+	p.initialized = true;
+	return p;
+}
+Point Point::operator/(float b)//NOT TESTED
+{
+	Point p = *this;
+	p.x = this->x / b;
+	p.y = this->y / b;
+	p.z = this->z / b;
+	this->initialized = true;
+	return p;
+}
+
 float Point::angle(std::vector<float> vec2)
 {
 	std::vector<float> vec1 = this->normalv;
@@ -197,16 +288,27 @@ Point Point::rotate(float angles,bool is3d)
 	vr.adjacent_tris = this->adjacent_tris;
 	vr.color = this->color;
 	vr.tripoints = this->tripoints;
-	//Rotating normal
-	/*if (!this->normalv.empty()) {
-		Point nr;
-		nr.create(this->normalv[0], this->normalv[1], this->normalv[2]);
-		nr.rotate(angles);
-		vr.normalv.push_back(nr.x);
-		vr.normalv.push_back(nr.y);
-		vr.normalv.push_back(nr.z);
-	}*/
 	return vr;
+}
+void sort_clockwise(std::vector<Point> vs, std::vector<int>& indices)
+{
+	Point c;
+	for (int i = 0; i < std::size(vs); i++)
+	{
+		
+		c = c + vs[i];
+
+	}
+	/*for (int i = 0; i < std::size(vs); i++)
+	{
+
+		vs[i]= vs[i]-c;
+
+	}*/
+	c = c / std::size(vs);
+	Point r = vs[0]-c;
+	Point p = cross_product(r, c);
+	quickSort2(vs, 0, std::size(vs) - 1, c,p, r, indices);
 }
 std::vector<float> Point::vector(Point A)
 {
@@ -261,6 +363,11 @@ void Edge::clear()
 {
 	this->p1.clear();
 	this->p2.clear();
+	this->adjacentFaces.clear();
+}
+Point Edge::center()
+{
+	return (this->p1+this->p2)/2;
 }
 void Edge::draw(sf::RenderWindow& window) 
 {
@@ -294,6 +401,8 @@ void Edge::draw_3d(sf::RenderWindow& window) const
 		sf::Vertex(sf::Vector2f(this->p1.x*k1, -this->p1.y*k1)),
 		sf::Vertex(sf::Vector2f(this->p2.x*k2, -this->p2.y*k2))
 	};
+	line[0].color = this->color;
+	line[1].color = this->color;
 	window.draw(line, 2, sf::Lines);
 }
 void Edge::rotate(float angle)
@@ -306,44 +415,70 @@ void Edge::operator=(Edge e)
 {
 	this->p1 = e.p1;
 	this->p2 = e.p2; 
-	this->s1 = e.s1;
-	this->s2 = e.s2;
+	this->adjacentFaces = e.adjacentFaces;
+	this->thicc = e.thicc;
+	this->color = e.color;
 }
+bool Edge::operator==(Edge const&  e) const
+{
+	if ((this->p1 == e.p1 && this->p2 == e.p2) ||(this->p1 == e.p2 && this->p2 == e.p1))
+	{
+		return true;
+	} 
+	else 
+	{
+		return false;
+	}
+	
+}
+bool Edge::contains(Edge& e, Point p)
+{
+	if ((e.p1 == p) || (e.p2 == p))
+		return true;
+	else
+		return false;
+}	
 Edge Edge::operator*(float k)
 {
-	this->p1 = this->p1 * k;
-	this->p2 = this->p2 * k;
-	return *this;
+	Edge e;
+	e = *this;
+	e.p1 = this->p1 * k;
+	e.p2 = this->p2 * k;
+	return e;
 }
 
 
-void Triangle::draw(sf::RenderWindow& window) const
+void Face::draw(sf::RenderWindow& window) const
 {
 	sf::ConvexShape convex;
 	convex.setPointCount(3);
-	convex.setPoint(0, sf::Vector2f(this->v1.x, -this->v1.y));
-	convex.setPoint(1, sf::Vector2f(this->v2.x, -this->v2.y));
-	convex.setPoint(2, sf::Vector2f(this->v3.x, -this->v3.y));
+	for (int i = 0; i < 3; i++)
+	{
+		convex.setPoint(i, sf::Vector2f(this->v[i].x, -this->v[i].y));
+	}
 	convex.setOutlineThickness(this->border_width);
 	convex.setOutlineColor(this->border_color);
 	convex.setFillColor(this->color);
 	window.draw(convex);
 	
 }
-void Triangle::draw_3d(sf::RenderWindow& window, Point light,bool islit,bool gouraud, bool border)
+void Face::draw_3d(sf::RenderWindow& window, Point light,bool islit,bool gouraud, bool border)
 {
+	
 	float Lens = 1000;
-	float k1, k2, k3;
-	k1 = exp(this->v1.z / Lens);
-	k2 = exp(this->v2.z / Lens);
-	k3 = exp(this->v3.z / Lens);
+	std::vector<float> k(this->n);
+	for (int i = 0; i < this->n; i++)
+	{
+		k[i] = exp(this->v[i].z / Lens);
+	}
 	if (!gouraud) 
 	{
 		sf::ConvexShape convex;
-		convex.setPointCount(3);
-		convex.setPoint(0, sf::Vector2f(this->v1.x * k1, -this->v1.y * k1));
-		convex.setPoint(1, sf::Vector2f(this->v2.x * k2, -this->v2.y * k2));
-		convex.setPoint(2, sf::Vector2f(this->v3.x * k3, -this->v3.y * k3));
+		convex.setPointCount(this->n);
+		for (int i = 0; i < this->n; i++)
+		{
+			convex.setPoint(i, sf::Vector2f(this->v[i].x * k[i], -this->v[i].y * k[i]));
+		}
 		this->normal(true);
 		if (islit)
 		{
@@ -354,7 +489,7 @@ void Triangle::draw_3d(sf::RenderWindow& window, Point light,bool islit,bool gou
 		window.draw(convex);
 		if (border)
 		{
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < this->n; i++)
 			{
 				this->borders[i].draw_3d(window);
 			}
@@ -362,136 +497,312 @@ void Triangle::draw_3d(sf::RenderWindow& window, Point light,bool islit,bool gou
 	}
 	else
 	{
-		sf::VertexArray Triangle(sf::Triangles, 3);
+		sf::VertexArray Face(sf::Triangles, this->n);
+		if (this->n == 4) 
+			Face.setPrimitiveType(sf::Quads);
 
-		// define the position of the Triangle's points
-		Triangle[0].position = sf::Vector2f(this->v1.x * k1, -this->v1.y * k1);
-		Triangle[1].position = sf::Vector2f(this->v2.x * k2, -this->v2.y * k2);
-		Triangle[2].position = sf::Vector2f(this->v3.x * k3, -this->v3.y * k3);
-
-		// define the color of the Triangle's points
-		Triangle[0].color = this->v1.color;
-		Triangle[1].color = this->v2.color;
-		Triangle[2].color = this->v3.color;
-		window.draw(Triangle);
+		
+		for (int i = 0; i < this->n; i++)
+		{
+			Face[i].position = sf::Vector2f(this->v[i].x * k[i], -this->v[i].y * k[i]);
+			Face[i].color = this->v[i].color;
+		}
+		window.draw(Face);
+		if (border)
+		{
+			for (int i = 0; i < this->n; i++)
+			{
+				this->borders[i].draw_3d(window);
+			}
+		}
 	}
 	
 	
 	
 
 }
-void Triangle::scale_this(float lambda)
+void Face::scale_this(float lambda)
 {
 	Point cen;
 	cen = this->center_point();
 
-	this->v1.x = (this->v1.x + lambda * cen.x) / (1 + lambda);
-	this->v1.y = (this->v1.y + lambda * cen.y) / (1 + lambda);
-	this->v1.z = (this->v1.z + lambda * cen.z) / (1 + lambda);
-
-	this->v2.x = (this->v2.x + lambda * cen.x) / (1 + lambda);
-	this->v2.y = (this->v2.y + lambda * cen.y) / (1 + lambda);
-	this->v2.z = (this->v2.z + lambda * cen.z) / (1 + lambda);
-
-	this->v3.x = (this->v3.x + lambda * cen.x) / (1 + lambda);
-	this->v3.y = (this->v3.y + lambda * cen.y) / (1 + lambda);
-	this->v3.z = (this->v3.z + lambda * cen.z) / (1 + lambda);
+	for (int i = 0; i < this->n; i++)
+	{
+		this->v[i].x = (this->v[i].x + lambda * cen.x) / (1 + lambda);
+		this->v[i].y = (this->v[i].y + lambda * cen.y) / (1 + lambda);
+		this->v[i].z = (this->v[i].z + lambda * cen.z) / (1 + lambda);
+	}
 }
-Triangle Triangle::scale(float lambda)
+Face Face::scale(float lambda)
 {
-	Triangle tris = *this;
+	Face tris = *this;
 	Point cen;
 	cen = this->center_point();
 
-	tris.v1.x = (this->v1.x + lambda * cen.x) / (1 + lambda);
-	tris.v1.y = (this->v1.y + lambda * cen.y) / (1 + lambda);
-	tris.v1.z = (this->v1.z + lambda * cen.z) / (1 + lambda);
-
-	tris.v2.x = (this->v2.x + lambda * cen.x) / (1 + lambda);
-	tris.v2.y = (this->v2.y + lambda * cen.y) / (1 + lambda);
-	tris.v2.z = (this->v2.z + lambda * cen.z) / (1 + lambda);
-
-	tris.v3.x = (this->v3.x + lambda * cen.x) / (1 + lambda);
-	tris.v3.y = (this->v3.y + lambda * cen.y) / (1 + lambda);
-	tris.v3.z = (this->v3.z + lambda * cen.z) / (1 + lambda);
+	for (int i = 0; i < this->n; i++)
+	{
+		tris.v[i].x = (this->v[i].x + lambda * cen.x) / (1 + lambda);
+		tris.v[i].y = (this->v[i].y + lambda * cen.y) / (1 + lambda);
+		tris.v[i].z = (this->v[i].z + lambda * cen.z) / (1 + lambda);
+	}
 	return tris;
 }
-void Triangle::create(Point v1, Point v2, Point v3)
+//void Face::update(Point v1, Point v2, Point v3)
+//{
+//	if(this->border)
+//	{
+//		this->borders[0].p1 = v1;
+//		this->borders[0].p2 = v2;
+//
+//		this->borders[1].p1 = v2;
+//		this->borders[1].p2 = v3;
+//
+//		this->borders[2].p1 = v3;
+//		this->borders[2].p2 = v1;
+//	}
+//	this->v[0] = v1;
+//	this->v[1] = v2;
+//	this->v[2] = v3;
+//}
+//void Face::update(Point v1, Point v2, Point v3, Point v4)
+//{
+//	if (this->border)
+//	{
+//		this->borders[0].p1 = v1;
+//		this->borders[0].p2 = v2;
+//
+//		this->borders[1].p1 = v2;
+//		this->borders[1].p2 = v3;
+//
+//		this->borders[2].p1 = v3;
+//		this->borders[2].p2 = v4;
+//
+//		this->borders[3].p1 = v4;
+//		this->borders[3].p2 = v1;
+//	}
+//	this->v = { Point(),Point(),Point(),Point() };
+//	this->v[0] = v1;
+//	this->v[1] = v2;
+//	this->v[2] = v3;
+//	this->v[3] = v4;
+//}
+//void Face::create(Point& v1, Point& v2, Point& v3, int tris_index)
+//{
+//	this->n = 3;
+//	v1.adjacent_tris.push_back(tris_index);
+//	v2.adjacent_tris.push_back(tris_index);
+//	v3.adjacent_tris.push_back(tris_index);
+//	this->v[0] = v1;
+//	this->v[1] = v2;
+//	this->v[2] = v3;
+//	v1.tripoints[tris_index] = "v1";
+//	v2.tripoints[tris_index] = "v2";
+//	v3.tripoints[tris_index] = "v3";
+//	
+//	
+//	Edge e;
+//	this->borders = { Edge(),Edge(),Edge() };
+//	//----------
+//	e.create(v1, v2);
+//	std::vector<Edge>::iterator dupl = std::find(border_global.begin(), border_global.end(), e);
+//	if (dupl == border_global.end())
+//	{
+//		e.adjacentFaces.push_back(tris_index);
+//		border_global.push_back(e);
+//	}
+//	else
+//		border_global[std::distance(border_global.begin(), dupl + 1) - 1].adjacentFaces.push_back(tris_index);
+//	this->borders[0] = e;
+//	//----------
+//	e.clear();
+//	e.create(v2, v3);
+//	dupl = std::find(border_global.begin(), border_global.end(), e);
+//	if (dupl == border_global.end())
+//	{
+//		e.adjacentFaces.push_back(tris_index);
+//		border_global.push_back(e);
+//	}
+//	else
+//		border_global[std::distance(border_global.begin(), dupl + 1) - 1].adjacentFaces.push_back(tris_index);
+//	this->borders[1] = e;
+//	//----------
+//	e.clear();
+//	e.create(v3, v1);
+//	dupl = std::find(border_global.begin(), border_global.end(), e);
+//	if (dupl == border_global.end())
+//	{
+//		e.adjacentFaces.push_back(tris_index);
+//		border_global.push_back(e);
+//	}
+//	else
+//		border_global[std::distance(border_global.begin(), dupl + 1) - 1].adjacentFaces.push_back(tris_index);
+//	this->borders[2] = e;
+//	this->border = true;
+//	
+//}
+void Face::update(std::vector<Point> v)
 {
-	this->v1 = v1;
-	this->v2 = v2;
-	this->v3 = v3;
-	Edge e1, e2, e3;
-	e1.create(v1, v2);
-	this->borders[0] = e1;
-	e2.create(v1, v3);
-	this->borders[1] = e2;
-	e3.create(v2, v3);
-	this->borders[2] = e3;
-	this->border = true;
-	/*if (!this->border) {
-		Edge e1, e2, e3;
-		e1.create(v1, v2);
-		this->borders.push_back(&e1);
-		e2.create(v1, v3);
-		this->borders.push_back(&e2);
-		e3.create(v2, v3);
-		this->borders.push_back(&e3);
-		this->border = true;
-	}*/
-}
-void Triangle::create(Point& v1, Point& v2, Point& v3, int tris_index)
-{
-	v1.adjacent_tris.push_back(tris_index);
-	v2.adjacent_tris.push_back(tris_index);
-	v3.adjacent_tris.push_back(tris_index);
-	this->v1 = v1;
-	this->v2 = v2;
-	this->v3 = v3;
-	v1.tripoints[tris_index] = "v1";
-	v2.tripoints[tris_index] = "v2";
-	v3.tripoints[tris_index] = "v3";
-	
-	
-	Edge e1, e2, e3;
-	e1.create(v1, v2);
-	this->borders[0] = e1;
-	e2.create(v1, v3);
-	this->borders[1] = e2;
-	e3.create(v2, v3);
-	this->borders[2] = e3;
-	this->border = true;
-	std::cout << "ty";
-	
-}
-float Triangle::center()
-{
-	if (!this->centroid.initialized) 
+	int v_count = std::size(v);
+	this->n = v_count;
+	//Edge e;
+	this->v = std::vector<Point>(v_count);
+	if (this->border)
 	{
-		Point centre;
-		centre.create((this->v1.x + this->v2.x + this->v3.x) / 3.0, (this->v1.y + this->v2.y + this->v3.y) / 3.0, (this->v1.z + this->v2.z + this->v3.z) / 3.0);
-		this->centroid = centre;
+		this->borders = std::vector<Edge>(v_count);
 	}
+	for (int i = 0; i < v_count; i++)
+	{
+		this->v[i] = v[i];
+		if (this->border)
+		{
+			//this->borders = std::vector<Edge>(v_count);
+			if (i != v_count-1) 
+			{
+				this->borders[i].p1 = v[i];
+				this->borders[i].p2 = v[i+1];
+			}
+			else 
+			{
+				this->borders[i].p1 = v[i];
+				this->borders[i].p2 = v[0];
+			}
+		}
+	}
+}
+void Face::create(std::vector<Point*> v, int tris_index)
+{
+	int v_count = std::size(v);
+	this->n = v_count;
+	Edge e;
+	this->borders = std::vector<Edge>(v_count);
+	this->v = std::vector<Point>(v_count);
+
+	for (int i = 0; i < v_count; i++)
+	{
+		v[i]->adjacent_tris.push_back(tris_index);
+		this->v[i] = *v[i];
+		v[i]->tripoints[tris_index] = "v"+std::to_string(i+1);
+		//---------------------------
+		if (i != v_count - 1) 
+			e.create(v[i], v[i + 1]);
+		else
+			e.create(v[i], v[0]);
+
+		std::vector<Edge>::iterator dupl = std::find(border_global.begin(), border_global.end(), e);
+		if (dupl == border_global.end())
+		{
+			e.adjacentFaces.push_back(tris_index);
+			border_global.push_back(e);
+		}
+		else
+			border_global[std::distance(border_global.begin(), dupl + 1) - 1].adjacentFaces.push_back(tris_index);
+		this->borders[i] = e;
+		e.clear();
+	}
+	this->border = true;
+}
+//void Face::create(Point& v1, Point& v2, Point& v3,  Point& v4, int tris_index)
+//{
+//	this->n = 4;
+//	this->v = { Point(),Point(),Point(),Point() };
+//	
+//	v1.adjacent_tris.push_back(tris_index);
+//	v2.adjacent_tris.push_back(tris_index);
+//	v3.adjacent_tris.push_back(tris_index);
+//	v4.adjacent_tris.push_back(tris_index);
+//	v1.tripoints[tris_index] = "v1";
+//	v2.tripoints[tris_index] = "v2";
+//	v3.tripoints[tris_index] = "v3";
+//	v4.tripoints[tris_index] = "v4";
+//	this->v[0] = v1;
+//	this->v[1] = v2;
+//	this->v[2] = v3;
+//	this->v[3] = v4;
+//	
+//
+//
+//	
+//
+//	Edge e;
+//	this->borders = std::vector<Edge>(4);
+//	//----------
+//	e.create(v1, v2);
+//	std::vector<Edge>::iterator dupl = std::find(border_global.begin(), border_global.end(),e);
+//	if (dupl == border_global.end()) 
+//	{
+//		e.adjacentFaces.push_back(tris_index);
+//		border_global.push_back(e);
+//	}
+//	else
+//		border_global[std::distance(border_global.begin(),dupl+1) - 1].adjacentFaces.push_back(tris_index);
+//	this->borders[0]=e;
+//	//----------
+//	e.clear();
+//	e.create(v2, v3);
+//	dupl = std::find(border_global.begin(), border_global.end(), e);
+//	if (dupl == border_global.end())
+//	{
+//		e.adjacentFaces.push_back(tris_index);
+//		border_global.push_back(e);
+//	}
+//	else
+//		border_global[std::distance(border_global.begin(), dupl + 1) - 1].adjacentFaces.push_back(tris_index);
+//	this->borders[1] = e;
+//	//----------
+//	e.clear();
+//	e.create(v3, v4);
+//	dupl = std::find(border_global.begin(), border_global.end(), e);
+//	if (dupl == border_global.end())
+//	{
+//		e.adjacentFaces.push_back(tris_index);
+//		border_global.push_back(e);
+//	}
+//	else
+//		border_global[std::distance(border_global.begin(), dupl + 1) - 1].adjacentFaces.push_back(tris_index);
+//	this->borders[2] = e;
+//	//----------
+//	e.clear();
+//	e.create(v4, v1);
+//	dupl = std::find(border_global.begin(), border_global.end(), e);
+//	if (dupl == border_global.end())
+//	{
+//		e.adjacentFaces.push_back(tris_index);
+//		border_global.push_back(e);
+//	}
+//	else
+//		border_global[std::distance(border_global.begin(), dupl + 1)-1].adjacentFaces.push_back(tris_index);
+//	this->borders[3] = e;
+//	//----------
+//	this->border = true;
+//	
+//}
+float Face::center()
+{
+	Point centre;
+	centre = std::accumulate(this->v.begin(), this->v.end(), Point()) / std::size(this->v);
+	this->centroid = centre;
 	return this->centroid.z;
 }
-Point Triangle::center_point()
+Point Face::center_point()
 {
 	if (!this->centroid.initialized)
 	{
-		Point centre;
-		centre.create((this->v1.x + this->v2.x + this->v3.x) / 3.0, (this->v1.y + this->v2.y + this->v3.y) / 3.0, (this->v1.z + this->v2.z + this->v3.z) / 3.0);
-		this->centroid = centre;
+		Point center;
+		/*if (std::size(v) == 3)
+			center.create((this->v[0].x + this->v[1].x + this->v[2].x) / 3.0, (this->v[0].y + this->v[1].y + this->v[2].y) / 3.0, (this->v[0].z + this->v[1].z + this->v[2].z) / 3.0);
+		else if (std::size(v) == 4)
+			center.create((this->v[0].x + this->v[1].x + this->v[2].x + this->v[3].x) / 4.0, (this->v[0].y + this->v[1].y + this->v[2].y + this->v[3].y) / 4.0, (this->v[0].z + this->v[1].z + this->v[2].z + this->v[3].z) / 4.0);*/
+		center = std::accumulate(this->v.begin(),this->v.end(),Point())/std::size(this->v);
+		this->centroid = center;
 	}
 	return this->centroid;
 }
-void Triangle::paint(std::string Col)
+void Face::paint(std::string Col)
 {
 	if (Col == "Red") 
 	{
 		this->color = sf::Color::Red;
-		this->v1.color = sf::Color::Red;
-		this->v2.color = sf::Color::Red;
-		this->v3.color = sf::Color::Red;
+		
 	}
 	if (Col == "Green")
 	{
@@ -509,16 +820,27 @@ void Triangle::paint(std::string Col)
 	{
 		this->color = sf::Color::White;
 	}
+	for (int i = 0; i < this->n; i++)
+	{
+
+		this->v[i].color = this->color;
+	}
 
 }
-void Triangle::paint(HEX color)
+void Face::paint(HEX color)
 {
 	this->color = sf::Color(color.red, color.green, color.blue);
-	this->v1.color = sf::Color(color.red, color.green, color.blue);
-	this->v2.color = sf::Color(color.red, color.green, color.blue);
-	this->v3.color = sf::Color(color.red, color.green, color.blue);
+	this->border_color = sf::Color(color.red - (color.red * 100) / 255, color.green - (color.green * 100) / 255, color.blue - (color.blue * 100) / 255);
+	for (int i = 0; i < this->n; i++)
+	{
+		this->v[i].color =this->color;
+		this->borders[i].color = this->border_color;
+	}
+	
+	/*this->v2.color = sf::Color(color.red, color.green, color.blue);
+	this->v3.color = sf::Color(color.red, color.green, color.blue);*/
 }
-void Triangle::lightness(float l)
+void Face::lightness(float l)
 {
 	l = abs(l);
 	float m=std::max(this->color.r, std::max(this->color.g, this->color.b));
@@ -538,31 +860,58 @@ void Triangle::lightness(float l)
 	}
 	
 }
-Triangle Triangle::rotate(float angle)
+Face Face::rotate(float angle)//TUTA?
 {
-	Triangle tris;
-	tris.create
+	//Face tris;
+	std::vector<Point> v(std::size(this->v));
+	for (int i = 0; i < std::size(v);i++)
+	{
+		v[i] = this->v[i].rotate(angle, true);
+	}
+	this->update(v);
+	/*if(std::size(v)==3)
+		this->update
 	(
-		this->v1.rotate(angle, true),
-		this->v2.rotate(angle, true),
-		this->v3.rotate(angle, true)
+		this->v[0].rotate(angle, true),
+		this->v[1].rotate(angle, true),
+		this->v[2].rotate(angle, true)
 	);
-	tris.normalv = this->normalv;
+	else if(std::size(v)==4)
+		this->update
+		(
+			this->v[0].rotate(angle, true),
+			this->v[1].rotate(angle, true),
+			this->v[2].rotate(angle, true), 
+			this->v[3].rotate(angle, true)
+		);*/
 	this->r_angle = angle;
-	tris.color = this->color;
-	
-
-	return tris;
+	return *this;
 }
-std::vector<float> Triangle::normal(bool update)
+std::vector<float> Face::normal(bool update)
 {
-	float nx, ny, nz;
+	float nx=0, ny=0, nz=0;
 	if (update)
 	{
-		
-		nx = (this->v2.y - this->v1.y) * (this->v3.z - this->v1.z) - (this->v2.z - this->v1.z) * (this->v3.y - this->v1.y);
-		ny = (this->v2.z - this->v1.z) * (this->v3.x - this->v1.x) - (this->v2.x - this->v1.x) * (this->v3.z - this->v1.z);
-		nz = (this->v2.x - this->v1.x) * (this->v3.y - this->v1.y) - (this->v2.y - this->v1.y) * (this->v3.x - this->v1.x);
+		//if (this->n ==3) {
+			nx = (this->v[1].y - this->v[0].y) * (this->v[2].z - this->v[0].z) - (this->v[1].z - this->v[0].z) * (this->v[2].y - this->v[0].y);
+			ny = (this->v[1].z - this->v[0].z) * (this->v[2].x - this->v[0].x) - (this->v[1].x - this->v[0].x) * (this->v[2].z - this->v[0].z);
+			nz = (this->v[1].x - this->v[0].x) * (this->v[2].y - this->v[0].y) - (this->v[1].y - this->v[0].y) * (this->v[2].x - this->v[0].x);
+		//}
+		/*else if (this->n == 4)
+		{
+			nx = (this->v[1].y - this->v[0].y) * (this->v[2].z - this->v[0].z) - (this->v[1].z - this->v[0].z) * (this->v[2].y - this->v[0].y);
+			ny = (this->v[1].z - this->v[0].z) * (this->v[2].x - this->v[0].x) - (this->v[1].x - this->v[0].x) * (this->v[2].z - this->v[0].z);
+			nz = (this->v[1].x - this->v[0].x) * (this->v[2].y - this->v[0].y) - (this->v[1].y - this->v[0].y) * (this->v[2].x - this->v[0].x);
+			float nx2, ny2, nz2;
+			nx2 = (this->v[1].y - this->v[3].y) * (this->v[2].z - this->v[3].z) - (this->v[1].z - this->v[3].z) * (this->v[2].y - this->v[3].y);
+			ny2 = (this->v[1].z - this->v[3].z) * (this->v[2].x - this->v[3].x) - (this->v[1].x - this->v[3].x) * (this->v[2].z - this->v[3].z);
+			nz2 = (this->v[1].x - this->v[3].x) * (this->v[2].y - this->v[3].y) - (this->v[1].y - this->v[3].y) * (this->v[2].x - this->v[3].x);
+			
+			nx = (nx+nx2)/2;
+			ny = (ny+ny2)/2;
+			nz = (nz+nz2)/2;
+			
+		}*/
 		float lenth = sqrt(pow(nx, 2) + pow(ny, 2) + pow(nz, 2));
 		nx *= 10 / lenth;
 		ny *= 10 / lenth;
@@ -572,8 +921,8 @@ std::vector<float> Triangle::normal(bool update)
 			this->normalv.push_back(nx);
 			this->normalv.push_back(ny);
 			this->normalv.push_back(nz);
-			/*std::cout << this->normalv[0]<<"\n";
-			std::cout << this->normalv[1] << "\n";
+			/*std::cout << this->normalv[0]<<"n";
+			std::cout << this->normalv[1] << "n";
 			std::cout << this->normalv[2];*/
 		}
 		else
@@ -592,29 +941,42 @@ std::vector<float> Triangle::normal(bool update)
 	}
 	return this->normalv;
 }
-void Triangle::operator=(Triangle tris)
+void Face::operator=(Face tris)
 {
 	this->border_color = tris.border_color;
 	this->color = tris.color;
-	this->v1 = tris.v1;
-	this->v2 = tris.v2;
-	this->v3 = tris.v3;
+	this->v = tris.v;
 	this->border_width = tris.border_width;
 	this->centroid = tris.centroid;
 	this->normalv = tris.normalv;
 	this->r_angle = tris.r_angle;
 	this->border = tris.border;
 	this->borders = tris.borders;
+	this->n = tris.n;
 }
-Triangle Triangle::operator*(float k)
+bool Face::operator==(Face tris)//NOT CHECKED
 {
-	this->v1 = this->v1 * k;
-	this->v2 = this->v2 * k;
-	this->v3 = this->v3 * k;
+	if (this->v == tris.v)
+		return true;
+	else
+		return false;
+}
+bool Face::operator!=(Face tris)//NOT CHECKED
+{
+	return !(*this == tris);
+}
+Face Face::operator*(float k)
+{
+	for (int i = 0; i < this->n; i++)
+	{
+		this->v[i] = this->v[i]* k;
+	}
+	/*this->v2 = this->v2 * k;
+	this->v3 = this->v3 * k;*/
 	return *this;
 }
 
-float Triangle::angle(std::vector<float> vec2)
+float Face::angle(std::vector<float> vec2)
 {
 	std::vector<float> vec1 = this->normalv;
 	float angle = std::acos((vec1[0] * vec2[0] + vec1[1] * vec2[1] + vec1[2] * vec2[2]) / (sqrt(pow(vec1[0], 2) + pow(vec1[1], 2) + pow(vec1[2], 2)) * sqrt(pow(vec2[0], 2) + pow(vec2[1], 2) + pow(vec2[2], 2))));
@@ -631,18 +993,21 @@ std::ostream& operator<<(std::ostream& os, Edge& e)
 	os << "[" << e.p1 << "," << e.p2 << "]\n";
 	return os;
 }
-std::ostream& operator<<(std::ostream& os, Triangle t)
+std::ostream& operator<<(std::ostream& os, Face t)
 {
-	os << "(" << t.v1.x << "," << t.v1.y << "," << t.v1.z << ")\n";
-	os << "(" << t.v2.x << "," << t.v2.y << "," << t.v2.z << ")\n";
-	os << "(" << t.v3.x << "," << t.v3.y << "," << t.v3.z << ")\n";
+	for (int i = 0; i <3; i++)
+	{
+		os << "(" << t.v[i].x << "," << t.v[i].y << "," << t.v[i].z << ")n";
+	}
+	/*os << "(" << t.v2.x << "," << t.v2.y << "," << t.v2.z << ")n";
+	os << "(" << t.v3.x << "," << t.v3.y << "," << t.v3.z << ")n";*/
 	return os;
 }
 std::ostream& operator<<(std::ostream& os, Object o)
 {
 	for (int i = 0; i < std::size(o.mesh); i++)
 	{
-		os << "tris " << i + 1 << "\n";
+		os << "tris " << i + 1 << "n";
 		os << o.mesh[i];
 	}
 	return os;
@@ -660,18 +1025,27 @@ void Object::scale(float koefficient)
 		this->vertex_normals[i][0] = this->vertex_normals[i][0] * koefficient;
 		this->vertex_normals[i][1] = this->vertex_normals[i][1] * koefficient;
 		this->vertex_normals[i][2] = this->vertex_normals[i][2] * koefficient;
-		this->vertex_normals_vis[i] = this->vertex_normals_vis[i] * koefficient;
+		//this->vertex_normals_vis[i] = this->vertex_normals_vis[i] * koefficient;
+	}
+	for (int i = 0; i < std::size(this->border); i++)
+	{
+		this->border[i] = this->border[i] * koefficient;
+	}
+	for (int i = 0; i < std::size(this->points); i++)
+	{
 		this->points[i] = this->points[i] * koefficient;
 	}
 }
-void swap(std::vector<Triangle> &tris, int pos1, int pos2)
+void swap(std::vector<Face> &tris, int pos1, int pos2)
 {
-	Triangle t1;
+	Face t1;
 	t1=tris[pos1];
 	tris[pos1] = tris[pos2];
 	tris[pos2] = t1;
+	//if (tris[pos1 or 2] is backwards): delete
+	//else: previous thing 
 }
-int partition(std::vector<Triangle> &tris, int low, int high)
+int partition(std::vector<Face> &tris, int low, int high)
 {
 	float pivot = tris[high].center();
 	int i = (low - 1);
@@ -686,7 +1060,7 @@ int partition(std::vector<Triangle> &tris, int low, int high)
 	swap(tris, i+1,high);
 	return (i + 1);
 }
-void quickSort(std::vector<Triangle> &tris, int low, int high)
+void quickSort(std::vector<Face> &tris, int low, int high)
 {
 	if (low < high)
 	{
@@ -696,22 +1070,13 @@ void quickSort(std::vector<Triangle> &tris, int low, int high)
 	}
 }
 
-void Object::draw(sf::RenderWindow& window, Point light, sf::Color, bool islit, bool normal_visible, float angle, bool gouraud)
+void Object::draw(sf::RenderWindow& window, Point light, sf::Color, bool islit, bool normal_visible, float angle, bool gouraud,bool border)
 {
 	
 	Object obj;
-	if (this->r_angle != angle) 
-	{
-		obj=this->rotate(angle);
-		this->r_angle = angle;
-		this->mesh_rotated = obj.mesh;
-		//std::cout << "d";
-	}
-	else
-	{
-		obj = *this;
-		obj.mesh = this->mesh_rotated;
-	}
+	obj = this->rotate(angle);
+	this->r_angle = angle;
+	
 	
 
 	//PAINT
@@ -727,17 +1092,10 @@ void Object::draw(sf::RenderWindow& window, Point light, sf::Color, bool islit, 
 					[
 						obj.points[i].adjacent_tris[j]
 					];
-				if (vertex == "v1")
+				for (int k = 0; k < std::size(obj.mesh[obj.points[i].adjacent_tris[j]].v); k++)
 				{
-					obj.points[i].Gouraud(obj.mesh[obj.points[i].adjacent_tris[j]].v1, obj.vertex_normals[i], light);
-				}
-				if (vertex == "v2")
-				{
-					obj.points[i].Gouraud(obj.mesh[obj.points[i].adjacent_tris[j]].v2, obj.vertex_normals[i], light);
-				}
-				if (vertex == "v3")
-				{
-					obj.points[i].Gouraud(obj.mesh[obj.points[i].adjacent_tris[j]].v3, obj.vertex_normals[i], light);
+					if (vertex == "v"+std::to_string(k+1))
+						obj.points[i].Gouraud(obj.mesh[obj.points[i].adjacent_tris[j]].v[k], obj.vertex_normals[i], light);
 				}
 			}
 		}
@@ -749,7 +1107,8 @@ void Object::draw(sf::RenderWindow& window, Point light, sf::Color, bool islit, 
 	}
 	for (int i = 0; i < std::size(obj.mesh); i++)
 	{
-		obj.mesh[i].draw_3d(window, light, islit, gouraud,false);
+		obj.mesh[i].draw_3d(window, light, islit, gouraud,border);
+		
 	}
 	if (normal_visible)
 	{
@@ -762,44 +1121,44 @@ void Object::draw(sf::RenderWindow& window, Point light, sf::Color, bool islit, 
 	}
 	
 }
-void Object::renderInHalfs(sf::RenderWindow& window, Point light)
-{
-	quickSort(this->mesh, 2*(std::size(this->mesh)/3), std::size(this->mesh) - 1);
-	for (int i = 2 * (std::size(this->mesh) / 3); i < std::size(this->mesh); i++)
-	{
-		this->mesh[i].draw_3d(window, light);
-	}
-}
-void Object::create_hard_mode(std::vector<Triangle> mesh)
-{
-	std::vector<Triangle> border;
-	this->mesh = mesh;
-	for (int i = 0; i < std::size(mesh); i++)
-	{
-		border.push_back(mesh[i].scale(0.2));
-		if (i % 2)
-			border[i].paint("Green");
-		else
-			border[i].paint("Blue");
-	}
-	this->border = border;
-}
-void Object::paint(HEX color)
+void Object::paint(std::string Col)
 {
 	for (int i = 0; i < std::size(this->mesh); i++)
 	{
-		this->mesh[i].paint(color);
+		this->mesh[i].paint(Col);
 	}
-	this->color.r = color.red;
-	this->color.g = color.green;
-	this->color.b = color.blue;
-	this->mesh[100].paint("Red");
+	//is->color = sf::Color();
+
 }
-void Object::create(std::vector<Triangle> mesh, std::vector<Point> Point)
+void Object::paint(sf::Color color)
+{
+	HEX col;
+	col.create(color.r, color.g, color.b);
+	for (int i = 0; i < std::size(this->mesh); i++)
+	{
+		this->mesh[i].paint(col);
+	}
+	this->color.r = color.r;
+	this->color.g = color.g;
+	this->color.b = color.b;
+	//this->mesh[100].paint("Red");
+	
+}
+void Object::create(std::vector<Face> mesh, std::vector<Point> points)
 {
 	this->mesh = mesh;
-	this->points = Point;
-	
+	this->points = points;
+	this->border = border_global;
+
+	for (int i = 0; i < std::size(this->mesh); i++)
+	{
+		for (int j = 0; j < this->mesh[i].n; j++)
+		{
+			auto it = std::find(border_global.begin(), border_global.end(), this->mesh[i].borders[j]);
+			this->mesh[i].borders[j].adjacentFaces = border_global[std::distance(border_global.begin(), it)].adjacentFaces;
+;		}
+	}
+
 	this->calculate_center();
 
 	std::vector<float> vertex_normal = { 0,0,0 };
@@ -821,12 +1180,13 @@ void Object::create(std::vector<Triangle> mesh, std::vector<Point> Point)
 		vertex_normal[2] *= 10 / lenth;
 		this->vertex_normals.push_back(vertex_normal);
 		e.create(points[i], vertex_normal);
-		this->vertex_normals_vis.push_back(e);
-		e.clear();
+		/*this->vertex_normals_vis.push_back(e);
+		e.clear();*/
 		vertex_normal = { 0,0,0 };
 	}
+	
 }
-void Object::operator=(std::vector<Triangle> mesh)
+void Object::operator=(std::vector<Face> mesh)
 {
 	this->mesh = mesh;
 
@@ -835,10 +1195,9 @@ void Object::operator=(Object obj)
 {
 	this->mesh = obj.mesh;
 	this->points = obj.points;
+	this->border = obj.border;
 	this->vertex_normals = obj.vertex_normals;
 	this->vertex_normals_vis = obj.vertex_normals_vis;
-
-	this->border = obj.border;
 	this->r_angle = obj.r_angle;
 	this->sorted = obj.sorted;
 	this->color = obj.color;
@@ -857,13 +1216,288 @@ Object Object::rotate(float angle)
 	for (int i = 0; i < std::size(obj.points); i++)
 	{
 		obj.points[i] = obj.points[i].rotate(angle);
-		obj.vertex_normals_vis[i].rotate(angle);
+		//obj.vertex_normals_vis[i].rotate(angle);
 		p.create(obj.vertex_normals[i][0], obj.vertex_normals[i][1], obj.vertex_normals[i][2]);
 		p = p.rotate(angle, true);
 		obj.vertex_normals[i][0] = p.x;
 		obj.vertex_normals[i][1] = p.y;
 		obj.vertex_normals[i][2] = p.z;
 	}
+	return obj;
+}
+
+Object Object::Subdivide(int i, std::string subd_type)
+{
+	border_global.clear();
+	std::vector<Face> subdivided;
+	std::vector<Point> pSbD;
+	std::vector<std::vector<int>> vertices;
+	std::vector<int> vertex;
+	Face face;
+	if (subd_type == "Catmull-Clark")
+	{
+		for (int i = 0; i < std::size(this->mesh); i++)
+		{
+			std::vector<Point> updatedVertex;
+			std::vector<Point> edgePoint;
+			Point facePoint;
+
+			// MAKING VECTORS NOT EMPTY
+
+			updatedVertex = std::vector<Point>(this->mesh[i].n);
+			edgePoint = std::vector<Point>(this->mesh[i].n);
+
+			// CALCULATE FACE POINT
+
+			facePoint = this->mesh[i].center_point();
+			int face_ind = std::size(pSbD);
+			pSbD.push_back(facePoint);
+			for (int j = 0; j < this->mesh[i].n; j++)
+			{
+				// CALCULATE UPDATED FIRST VERTEX AND EDGE POINT OF ONE EDGE
+				updatedVertex[j] = this->updateVertex(this->mesh[i].v[j]);
+				edgePoint[j] = this->calculateEdgePoint(this->mesh[i].borders[j]);// borders are badly sorted
+				if (j == 0)
+				{
+					edgePoint[this->mesh[i].n-1] = this->calculateEdgePoint(this->mesh[i].borders[this->mesh[i].n-1]);
+				}
+				
+				// MAKE UNIQUE
+				
+				auto it_vert = std::find(pSbD.begin(), pSbD.end(), updatedVertex[j]);
+				if (it_vert == pSbD.end())
+				{
+					vertex.push_back(std::size(pSbD));
+					pSbD.push_back(updatedVertex[j]);
+				}
+				else 
+				{
+					vertex.push_back(std::distance(pSbD.begin(), it_vert));
+				}
+
+				auto it_edge = std::find(pSbD.begin(), pSbD.end(), edgePoint[j]);
+				if (it_edge == pSbD.end())
+				{
+					vertex.push_back(std::size(pSbD));
+					pSbD.push_back(edgePoint[j]);
+				}
+				else
+				{
+					vertex.push_back(std::distance(pSbD.begin(), it_edge));
+				}
+				
+				vertex.push_back(face_ind);
+				if (j != 0)
+				{
+					auto it_edge = std::find(pSbD.begin(), pSbD.end(), edgePoint[j-1]);
+					vertex.push_back(std::distance(pSbD.begin(), it_edge));
+				}
+				else
+				{
+					auto it_edge = std::find(pSbD.begin(), pSbD.end(), edgePoint[this->mesh[i].n - 1]);
+					if (it_edge == pSbD.end())
+					{
+						vertex.push_back(std::size(pSbD));
+						pSbD.push_back(edgePoint[this->mesh[i].n - 1]);
+					}
+					else
+					{
+						vertex.push_back(std::distance(pSbD.begin(), it_edge));
+					}
+
+					
+				}	
+				Face face;
+				std::vector<Point*> pointz;
+				for (int i = 0; i < std::size(vertex); i++)
+				{
+					pointz.push_back(&pSbD[vertex[i]]);
+				}
+				face.create(pointz, std::size(subdivided));
+				pointz.clear();
+				subdivided.push_back(face);
+				vertex.clear();
+			}
+		}
+	}
+	else if (subd_type == "Linear")
+	{
+		for (int i = 0; i < std::size(this->mesh); i++)
+		{
+			std::vector<Point> updatedVertex;
+			std::vector<Point> edgePoint;
+			Point facePoint;
+
+			// MAKING VECTORS NOT EMPTY
+
+			updatedVertex = std::vector<Point>(this->mesh[i].n);
+			edgePoint = std::vector<Point>(this->mesh[i].n);
+
+			// CALCULATE FACE POINT
+
+			facePoint = this->mesh[i].center_point();
+			int face_ind = std::size(pSbD);
+			pSbD.push_back(facePoint);
+			for (int j = 0; j < this->mesh[i].n; j++)
+			{
+				// CALCULATE UPDATED FIRST VERTEX AND EDGE POINT OF ONE EDGE
+				updatedVertex[j] = this->mesh[i].v[j];
+				updatedVertex[j].adjacent_tris.clear();
+				updatedVertex[j].tripoints.clear();
+				edgePoint[j] = this->mesh[i].borders[j].center();
+				edgePoint[j].adjacent_tris.clear();
+				edgePoint[j].tripoints.clear();
+				if (j == 0)
+				{
+					edgePoint[this->mesh[i].n - 1] = this->mesh[i].borders[this->mesh[i].n - 1].center();
+					edgePoint[this->mesh[i].n - 1].adjacent_tris.clear();
+					edgePoint[this->mesh[i].n - 1].tripoints.clear();
+				}
+
+				// MAKE UNIQUE
+
+				auto it_vert = std::find(pSbD.begin(), pSbD.end(), updatedVertex[j]);
+				if (it_vert == pSbD.end())
+				{
+					vertex.push_back(std::size(pSbD));
+					pSbD.push_back(updatedVertex[j]);
+				}
+				else
+				{
+					vertex.push_back(std::distance(pSbD.begin(), it_vert));
+				}
+
+				auto it_edge = std::find(pSbD.begin(), pSbD.end(), edgePoint[j]);
+				if (it_edge == pSbD.end())
+				{
+					vertex.push_back(std::size(pSbD));
+					pSbD.push_back(edgePoint[j]);
+				}
+				else
+				{
+					vertex.push_back(std::distance(pSbD.begin(), it_edge));
+				}
+
+				vertex.push_back(face_ind);
+				if (j != 0)
+				{
+					auto it_edge = std::find(pSbD.begin(), pSbD.end(), edgePoint[j - 1]);
+					vertex.push_back(std::distance(pSbD.begin(), it_edge));
+				}
+				else
+				{
+					auto it_edge = std::find(pSbD.begin(), pSbD.end(), edgePoint[this->mesh[i].n - 1]);
+					if (it_edge == pSbD.end())
+					{
+						vertex.push_back(std::size(pSbD));
+						pSbD.push_back(edgePoint[this->mesh[i].n - 1]);
+					}
+					else
+					{
+						vertex.push_back(std::distance(pSbD.begin(), it_edge));
+					}
+
+
+				}
+				Face face;
+				std::vector<Point*> pointz;
+				for (int i = 0; i < std::size(vertex); i++)
+				{
+					pointz.push_back(&pSbD[vertex[i]]);
+				}
+				face.create(pointz, std::size(subdivided));
+				pointz.clear();
+				subdivided.push_back(face);
+				vertex.clear();
+			}
+		}
+	}
+	else if (subd_type == "Doo-Sabin")//ADD THE HOLE 
+	{
+		int amount_of_polys=std::size(this->mesh)+std::size(this->points)+std::size(this->border);
+		for (int i = 0; i < std::size(this->mesh); i++)//CALCULATING FACE SHRINKING
+		{
+			std::vector<int> vertex(std::size(this->mesh[i].v));
+			Point new_v;
+			for (int j = 0; j < std::size(this->mesh[i].v); j++)
+			{
+				new_v.middle(this->mesh[i].v[j], this->mesh[i].center_point());
+				pSbD.push_back(new_v);
+				vertex[j] = std::size(pSbD) - 1;
+			}
+			vertices.push_back(vertex);
+		}
+		for (int i = 0; i < std::size(this->points); i++)//CALCULATING POINT SUBDIVISION
+		{
+			std::vector<int> vertex(std::size(this->points[i].adjacent_tris));
+			Point new_v;
+			for (int j = 0; j < std::size(this->points[i].adjacent_tris); j++)
+			{
+				new_v.middle(this->points[i],this->mesh[this->points[i].adjacent_tris[j]].center_point());
+				auto it = std::find(pSbD.begin(), pSbD.end(), new_v);
+				int index = std::distance(pSbD.begin(), it);
+				vertex[j] = index;
+			}
+			//SORT CLOCKWISE
+			std::vector<Point> vs(std::size(vertex));
+			for (int j = 0; j < std::size(vertex); j++)
+			{
+				vs[j] = pSbD[vertex[j]];
+			}
+			sort_clockwise(vs, vertex);
+			vs.clear();
+			vertices.push_back(vertex);
+		}
+		for (int i = 0; i < std::size(this->border); i++)//CALCULATING EDGE SUBDIVISION
+		{
+			std::vector<int> vertex(4);
+			Point new_v;
+			//vertex.clear();
+			if (std::size(this->border[i].adjacentFaces) == 2)
+			{
+				//FIRST POINT - FIRST FACE
+				new_v.middle(this->border[i].p2, this->mesh[this->border[i].adjacentFaces[0]].center_point());
+				auto it = std::find(pSbD.begin(), pSbD.end(), new_v);
+				int index = std::distance(pSbD.begin(), it);
+				vertex[0] = index;
+				//SECOND POINT - FIRST FACE
+				new_v.middle(this->border[i].p1, this->mesh[this->border[i].adjacentFaces[0]].center_point());
+				it = std::find(pSbD.begin(), pSbD.end(), new_v);
+				index = std::distance(pSbD.begin(), it);
+				vertex[1] = index;
+				//SECOND POINT - SECOND FACE
+				new_v.middle(this->border[i].p1, this->mesh[this->border[i].adjacentFaces[1]].center_point());
+				it = std::find(pSbD.begin(), pSbD.end(), new_v);
+				index = std::distance(pSbD.begin(), it);
+				vertex[2] = index;
+				//FIRST POINT - SECOND FACE
+				new_v.middle(this->border[i].p2, this->mesh[this->border[i].adjacentFaces[1]].center_point());
+				it = std::find(pSbD.begin(), pSbD.end(), new_v);
+				index = std::distance(pSbD.begin(), it);
+				vertex[3] = index;
+			}
+			vertices.push_back(vertex);
+		}
+		for (int i = 0; i < std::size(this->mesh)+ std::size(this->border)+ std::size(this->points); i++)
+		{
+			Face face;
+			std::vector<Point*> pointz;
+			for (int j = 0; j < std::size(vertices[i]); j++)
+			{
+				pointz.push_back(&pSbD[vertices[i][j]]);
+			}
+			face.create(pointz, std::size(subdivided));
+			pointz.clear();
+			subdivided.push_back(face);
+
+		}
+	}
+	
+	Object obj;
+	obj.create(subdivided, pSbD);
+	obj.color = this->color;
+	obj.paint(this->color);
+	//obj.paint("Green");
 	return obj;
 }
 void Object::calculate_center()
@@ -885,4 +1519,142 @@ void Object::calculate_center()
 		z = z / std::size(this->mesh);
 		this->center.create(x, y, z);
 	}
+}
+
+Point Object::calculateEdgePoint(Edge e)//NOT TESTED
+{
+	e.p1.adjacent_tris.clear();
+	e.p2.adjacent_tris.clear();
+	e.p1.tripoints.clear();
+	e.p2.tripoints.clear();
+	std::vector<Edge>::iterator it = std::find(this->border.begin(), this->border.end(),e);
+	int k = std::distance(this->border.begin(), it);
+	Point endPoint1, endPoint2, facePoint1, facePoint2, edgePoint;
+	endPoint1 = e.p1;
+	endPoint2 = e.p2;
+	if (it != this->border.end()) {
+		if (std::size(this->border[k].adjacentFaces) == 2) 
+		{
+			facePoint1 = this->mesh[this->border[k].adjacentFaces[0]].center_point();
+			facePoint2 = this->mesh[this->border[k].adjacentFaces[1]].center_point();
+			edgePoint = (endPoint1 + endPoint2 + facePoint1 + facePoint2) / 4;
+		}
+		else
+		{
+			
+			edgePoint = (endPoint1 + endPoint2) / 2;
+
+		}
+	}
+	
+	return edgePoint;
+}
+
+Point Object::calculateFacePoint(Edge e,Face f)
+{
+	Point facePoint;
+	bool found = false;
+	int i = 0;
+	while (!found)
+	{
+		for(int j=0;j<std::size(mesh[i].borders);j++)
+			if ((e == this->mesh[i].borders[j])&&(this->mesh[i]!=f))
+			{
+				found = true;
+			}
+		i++;
+	}
+
+	return this->mesh[i-1].center_point();
+}
+
+Point Object::updateVertex(Point v)
+{
+	//std::vector<Edge> adjEdge;
+	std::vector<Point> edgePoint;
+	std::vector<Point> facePoint;
+	Point result;
+	Point vertex;
+	int adjEdges=0;
+
+	
+	auto it = std::find(this->points.begin(), this->points.end(), v);
+	int k = std::distance(this->points.begin(), it);
+	vertex = this->points[k];
+	std::vector<Edge>::iterator adjEdg = std::find_if(this->border.begin(), this->border.end(), std::bind(Edge::contains, std::placeholders::_1, v));
+	std::vector<std::vector<Edge>::iterator> iterEdges;
+	while (adjEdg != this->border.end())
+	{
+		//std::cout << *adjEdg;
+		iterEdges.push_back(adjEdg);
+		adjEdg = std::find_if(adjEdg+1, this->border.end(), std::bind(Edge::contains, std::placeholders::_1, v));
+		adjEdges++;
+	}
+	//std::cout << "\n";
+	if (adjEdges != std::size(vertex.adjacent_tris))
+	{
+		//std::cout << "0\n";
+		
+		for (int i = 0; i < std::size(iterEdges); i++)
+		{
+			adjEdges = std::distance(this->border.begin(), iterEdges[i]);
+			if (std::size(this->border[adjEdges].adjacentFaces) == 1) 
+			{
+				
+				Point p = this->calculateEdgePoint(this->border[adjEdges]);
+				result = result + p;
+			}
+			
+		}
+		result = result + vertex;
+		result = result / 3;
+	}
+	else {
+
+		for (int i = 0; i < std::size(vertex.adjacent_tris); i++)
+		{
+			for (int j = 0; j < this->mesh[vertex.adjacent_tris[i]].n; j++)
+			{
+				if ((this->mesh[vertex.adjacent_tris[i]].borders[j].p1 == vertex) ||
+					(this->mesh[vertex.adjacent_tris[i]].borders[j].p2 == vertex))
+				{
+					Point p = this->calculateEdgePoint(this->mesh[vertex.adjacent_tris[i]].borders[j]);
+					auto it2 = std::find(edgePoint.begin(), edgePoint.end(), p);
+					k = std::distance(edgePoint.begin(), it2);
+					if (it2 == edgePoint.end())
+					{
+						edgePoint.push_back(p);
+					}
+					//result = result + edgePoint;
+				}
+			}
+			facePoint.push_back(this->mesh[vertex.adjacent_tris[i]].center_point());
+			//result = result + this->mesh[vertex.adjacent_tris[i]].center_point();
+		}
+
+		int l = std::size(vertex.adjacent_tris) - 3;
+		if (l < 0)
+		{
+			result.clear();
+			for (int i = 0; i < l; i++)
+				result = result + this->mesh[vertex.adjacent_tris[i]].center_point();
+			result = (result + vertex) / 2;
+		}
+		else
+		{
+			Point face, edge, vert;
+			for (int i = 0; i < std::size(edgePoint); i++)
+			{
+				edge = edge + edgePoint[i] / std::size(edgePoint);
+				face = face + facePoint[i] / std::size(edgePoint);
+			}
+			vert = vertex * l;
+			result = (edge * 2 + face + vert) / std::size(vertex.adjacent_tris);
+		}
+		/*if (l == 0)
+		{
+			result = (result + vertex*0.75) / 2;
+		}*/
+	}
+	return result;
 }

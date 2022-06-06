@@ -93,7 +93,7 @@ std::vector<std::vector<int>> parse_face(std::string text)
 }
 Object reading(std::string filename)
 {
-	std::vector<Triangle> mesh;
+	std::vector<Face> mesh;
 	std::string text;
 	std::ifstream myfile;
 	std::vector<std::vector<int>> vertices;
@@ -102,8 +102,9 @@ Object reading(std::string filename)
 	std::vector<Point> v;
 	std::vector<Point> vt;
 	std::vector<Point> vn;
-	Triangle tris;
-	std::vector<Triangle> f;
+	//Face tris,quad;
+	Face face;
+	std::vector<Face> f;
 	while (getline(myfile, text))
 	{
 		if (text[0] == 'v' && text[1] == ' ')
@@ -121,22 +122,29 @@ Object reading(std::string filename)
 		if (text[0] == 'f' && text[1] == ' ')
 		{
 			vertices = parse_face(text);
-			tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1], std::size(f));
-			
-			/*if (vn.empty()) 
-			{
-				tris.normalv.push_back((vn[vertices[0][2] - 1].x + vn[vertices[1][2] - 1].x + vn[vertices[2][2] - 1].x) / 3);
-				tris.normalv.push_back(-(vn[vertices[0][2] - 1].y + vn[vertices[1][2] - 1].y + vn[vertices[2][2] - 1].y) / 3);
-				tris.normalv.push_back((vn[vertices[0][2] - 1].z + vn[vertices[1][2] - 1].z + vn[vertices[2][2] - 1].z) / 3);
+			/*if (std::size(vertices) == 3) {
+				tris.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1], std::size(f));
+				f.push_back(tris);
+			}
+			else if (std::size(vertices) == 4) {
+				quad.create(v[vertices[0][0] - 1], v[vertices[1][0] - 1], v[vertices[2][0] - 1], v[vertices[3][0] - 1], std::size(f));
+				f.push_back(quad);
 			}*/
-			
-			f.push_back(tris);
+			std::vector<Point*> pointz;
+			for (int i = 0; i < std::size(vertices); i++)
+			{
+				pointz.push_back(&v[vertices[i][0] - 1]);
+			}
+			face.create(pointz, std::size(f));
+			pointz.clear();
+			f.push_back(face);
+			Face face;
+			//vertex.clear();
 		}
 	}
 	Object obj;
 	obj.create(f,v);
 	//mesh = f;
 	myfile.close();
-
 	return obj;
 }
